@@ -6,6 +6,16 @@ import * as PIXI from 'pixi.js';
 import Application = PIXI.Application;
 import Circle = PIXI.Circle;
 import Container = PIXI.Container;
+export class ZContainer extends Container {
+  public zIndex: number = 0;
+
+  /**
+   * Call this after each time this.y changes.
+   */
+  public updateZIndex() {
+    this.zIndex = this.y;
+  }
+}
 import Graphics = PIXI.Graphics;
 import loader = PIXI.loader;
 import Rectangle = PIXI.Rectangle;

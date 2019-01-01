@@ -1,12 +1,15 @@
-import { Circle, Container, Graphics, Sprite, Texture } from '../pixi-alias';
+import { Graphics, Sprite, Texture, ZContainer } from '../pixi-alias';
 
 /**
  * Has velocity and update. And shadow and z (elevation)
  */
-export class MovingContainer extends Container {
+export class MovingContainer extends ZContainer {
   public dx: number = 0;
   public dy: number = 0;
+  /** elevation */
   public z: number = 0;
+  /** What order to render in */
+  public zIndex: number = 0;
   /** the main Sprite of the container */
   public body: Sprite;
   /** half the original width of the container's shadow */
@@ -72,9 +75,8 @@ export class MovingContainer extends Container {
     this.x += this.dx * delta;
     this.y += this.dy * delta;
 
-    // this.rotation += 0.02;
-
-    // TODO update draw layer
+    // Update draw layer
+    this.updateZIndex();
 
     // TODO: height
   }

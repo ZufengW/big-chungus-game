@@ -1,19 +1,17 @@
 import './../styles/app.css';
-import {
-  constrainContainerPosition,
-  containerCollision,
-} from './collision';
 import { Chungus } from './containers/chungus';
 import { HealthBar } from './containers/health-bar';
 import { Treasure } from './containers/treasure';
 import { randRange } from './helpers';
 import {
   Application,
+  Container,
   loader,
   Sprite,
   Text,
   TextStyle,
   utils,
+  ZContainer,
 } from './pixi-alias';
 
 let type: string = 'WebGL';
@@ -57,6 +55,8 @@ let gameState: (delta: number) => void;
 let chungus: Chungus;  // the player
 let treasure: Treasure;  // treasure chest
 let healthBar: HealthBar;  // player's health bar
+// Sub-container within app.stage that only holds things with zIndex
+const zStage = new Container();
 
 // Wall boundaries of dungeon.png
 const DUNGEON_MIX_X = 32;
@@ -76,15 +76,18 @@ function setup() {
   const dungeon = new Sprite(id['dungeon.png']);
   app.stage.addChild(dungeon);
 
+  app.stage.addChild(zStage);
+
   chungus = new Chungus(resources[CHUNGUS_PATH].texture, CHUNGUS_SPEED);
   chungus.position.set(100, app.stage.height / 2);
-  app.stage.addChild(chungus);
+  zStage.addChild(chungus);
 
   treasure = new Treasure(id['treasure.png']);
   // Position the treasure next to the right edge of the canvas
   treasure.x = app.stage.width - treasure.width - 148;
   treasure.y = app.stage.height / 2 - treasure.height / 2;
-  app.stage.addChild(treasure);
+  zStage.addChild(treasure);
+  treasure.updateZIndex();
 
   // Create the health bar
   healthBar = new HealthBar(40);
@@ -122,6 +125,21 @@ function play(delta: number) {
   if (chungus.collision(treasure)) {
     chungus.isHit = true;
   }
+
+  // Update layer order
+  updateLayersOrder();
+
+}
+
+/**
+ * To update draw order of zContainers
+ */
+function updateLayersOrder(): void {
+  zStage.children.sort(compareZIndex);
+}
+
+function compareZIndex(a: ZContainer , b: ZContainer) {
+  return a.zIndex - b.zIndex;
 }
 
 function showEndMessage(message: string): Text {
