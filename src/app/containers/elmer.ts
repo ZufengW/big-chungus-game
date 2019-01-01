@@ -1,3 +1,4 @@
+import { angleBetweenPoints } from '../helpers';
 import {
   Graphics,
   Point,
@@ -61,7 +62,7 @@ export class Elmer extends Character {
    */
   private aimGun(pos: Point): void {
     // Calculate approximate angle
-    const angle = Math.atan2(pos.y - this.y, pos.x - this.x);
+    const angle = angleBetweenPoints(this.position, pos);
     if (pos.x < this.x && this.body.scale.y > 0) {
       this.body.scale.y = -1;
     } else if (pos.x > this.x && this.body.scale.y < 0) {
