@@ -13,6 +13,7 @@ import {
   utils,
   ZContainer,
 } from './pixi-alias';
+import { Elmer } from './containers/elmer';
 
 let type: string = 'WebGL';
 if (!utils.isWebGLSupported()) {
@@ -36,11 +37,13 @@ const loadingP = document.getElementById('loading-p');
 
 const resources = loader.resources;  // Alias
 const CHUNGUS_PATH = './assets/big-chungus-smaller.png';
+const ELMER_PATH = './assets/elmer-sm.png';
 const TREASURE_HUNTER_PATH = './assets/treasureHunter.json';
 
 // Load the assets
 loader
   .add(CHUNGUS_PATH)
+  .add(ELMER_PATH)
   .add(TREASURE_HUNTER_PATH)
   .on('progress', loadProgressHandler)
   .load(setup);
@@ -53,6 +56,7 @@ function loadProgressHandler(load, resource) {
 // Things used in the game
 let gameState: (delta: number) => void;
 let chungus: Chungus;  // the player
+let elmer: Elmer;
 let treasure: Treasure;  // treasure chest
 let healthBar: HealthBar;  // player's health bar
 // Sub-container within app.stage that only holds things with zIndex
@@ -78,6 +82,7 @@ function setup() {
 
   app.stage.addChild(zStage);
 
+  // Create the player
   chungus = new Chungus(resources[CHUNGUS_PATH].texture, CHUNGUS_SPEED);
   chungus.position.set(100, app.stage.height / 2);
   zStage.addChild(chungus);
@@ -88,6 +93,11 @@ function setup() {
   treasure.y = app.stage.height / 2 - treasure.height / 2;
   zStage.addChild(treasure);
   treasure.updateZIndex();
+
+  // Create an enemy
+  elmer = new Elmer(resources[ELMER_PATH].texture, chungus);
+  zStage.addChild(elmer);
+  elmer.position.set(200, 300);
 
   // Create the health bar
   healthBar = new HealthBar(40);
@@ -110,10 +120,14 @@ function gameLoop(delta: number) {
  * @param delta frame time difference
  */
 function play(delta: number) {
+
+  // Update everything
   chungus.update(delta);
+  elmer.update(delta);
 
   // postUpdate to update positions using velocity
   chungus.postUpdate(delta);
+  elmer.postUpdate(delta);
 
   // Constrain explorer to keep it within walls
   chungus.constrainPosition(

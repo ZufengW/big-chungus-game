@@ -18,6 +18,7 @@ export class ZContainer extends Container {
 }
 import Graphics = PIXI.Graphics;
 import loader = PIXI.loader;
+import Point = PIXI.Point;
 import Rectangle = PIXI.Rectangle;
 import Sprite = PIXI.Sprite;
 import Text = PIXI.Text;
@@ -31,6 +32,7 @@ export {
   Container,
   Graphics,
   loader,
+  Point,
   Rectangle,
   Sprite,
   Text,
