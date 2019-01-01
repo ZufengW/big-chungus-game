@@ -12,11 +12,12 @@ export class MovingContainer extends ZContainer {
   public zIndex: number = 0;
   /** the main Sprite of the container */
   public body: Sprite;
+  private shadow: Graphics;
   /** elevation */
   private z: number = 0;
   /** half the original width of the container's shadow */
   private originalRadius: number;
-  /** scaled */
+  /** scales with this.setScale. Used in collision detection */
   private radius: number;
 
   /**
@@ -44,6 +45,7 @@ export class MovingContainer extends ZContainer {
     shadow.alpha = 0.5;
 
     this.addChild(shadow);
+    this.shadow = shadow;
 
     // create the thing with texture
     const body = new Sprite(texture);
@@ -71,17 +73,20 @@ export class MovingContainer extends ZContainer {
    * @param scale to set
    */
   public setScale(scale: number): void {
-    this.scale.set(scale, scale);
+    this.scale.set(scale);
     this.radius = this.originalRadius * scale;
   }
 
   /**
-   * Set the elevation
+   * Set the elevation and update the Sprite's position
    * @param z new z value
    */
   public setZ(z: number): void {
     this.z = z;
     this.body.y = (this.body.height / 2) - this.z;
+    // normalize z to a value in range [0..1]
+    const normZ = normalize(z);
+    this.shadow.scale.set(1 - normZ);
   }
 
   public getZ(): number {
@@ -149,4 +154,18 @@ export class MovingContainer extends ZContainer {
       this.y = maxiY;
     }
   }
+}
+
+const MAX_NUM = 600;
+/**
+ * Normalises n to a number in range [0..1]
+ * @param n number to normalize
+ */
+function normalize(n: number) {
+  if (n >= MAX_NUM) {
+    return 1;
+  } else if (n <= 0) {
+    return 0;
+  }
+  return n / MAX_NUM;
 }
