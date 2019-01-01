@@ -1,11 +1,10 @@
 import { setupMoveKeys } from '../input';
 import {
-  Rectangle,
   Texture,
 } from '../pixi-alias';
-import { MovingContainer } from './moving-container';
+import { Character } from './character';
 
-export class Chungus extends MovingContainer {
+export class Chungus extends Character {
   public isHit: boolean = false;
   private speed: number = 0;
 
@@ -20,6 +19,7 @@ export class Chungus extends MovingContainer {
   }
 
   public update(delta: number): void {
+    super.update(delta);
     // tint differently if hurt
     this.body.tint = this.isHit ? 0xff0000 : 0xffffff;
   }
