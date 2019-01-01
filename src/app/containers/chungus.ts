@@ -21,10 +21,6 @@ export class Chungus extends MovingContainer {
 
   public update(delta: number): void {
     // tint differently if hurt
-    if (this.isHit) {
-      this.body.tint = 0xff0000;
-    } else {
-      this.body.tint = 0xffffff;
-    }
+    this.body.tint = this.isHit ? 0xff0000 : 0xffffff;
   }
 }

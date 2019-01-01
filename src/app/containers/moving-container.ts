@@ -86,9 +86,9 @@ export class MovingContainer extends Container {
    */
   public collision(c2: MovingContainer): boolean {
     const xDiff = this.x - c2.x;
-    // trick: since all ellipses are same ratio and angle, can halve y scale
-    const yDiff = (this.y - c2.y) / 2;
-    const dist = Math.sqrt((xDiff * xDiff) * (yDiff * yDiff));
+    // trick: since all ellipses are same ratio and angle, can double y scale
+    const yDiff = (this.y - c2.y) * 2;
+    const dist = Math.sqrt((xDiff * xDiff) + (yDiff * yDiff));
     return dist < (this.radius + c2.radius);
   }
 

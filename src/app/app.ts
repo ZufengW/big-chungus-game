@@ -82,7 +82,7 @@ function setup() {
 
   treasure = new Treasure(id['treasure.png']);
   // Position the treasure next to the right edge of the canvas
-  treasure.x = app.stage.width - treasure.width - 48;
+  treasure.x = app.stage.width - treasure.width - 148;
   treasure.y = app.stage.height / 2 - treasure.height / 2;
   app.stage.addChild(treasure);
 
@@ -109,8 +109,6 @@ function gameLoop(delta: number) {
 function play(delta: number) {
   chungus.update(delta);
 
-  chungus.isHit = false;  // reset
-
   // postUpdate to update positions using velocity
   chungus.postUpdate(delta);
 
@@ -119,6 +117,11 @@ function play(delta: number) {
     DUNGEON_MIX_X, DUNGEON_MAX_X,
     DUNGEON_MIN_Y, DUNGEON_MAX_Y,
   );
+
+  chungus.isHit = false;  // reset
+  if (chungus.collision(treasure)) {
+    chungus.isHit = true;
+  }
 }
 
 function showEndMessage(message: string): Text {
