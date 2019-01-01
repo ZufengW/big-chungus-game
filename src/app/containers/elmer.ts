@@ -3,7 +3,7 @@ import {
   Point,
   Texture,
 } from '../pixi-alias';
-import { Character } from './character';
+import { Character, State } from './character';
 import { MovingContainer } from './moving-container';
 
 /** Elmer's Active substates */
@@ -44,13 +44,15 @@ export class Elmer extends Character {
   public update(delta: number): void {
     super.update(delta);
 
-    // change state if hit
-    if (this.isHit) {
-      this.body.tint = 0xff0000;
+    // TODO: walk / aim / shoot when Active
+    if (super.getState() === State.Active) {
+      this.aimGun(this.enemy.position);
     }
+  }
 
-    // TODO: walk / aim / shoot
-    this.aimGun(this.enemy.position);
+  public takeDamage(from?: Character) {
+    this.aimLine.visible = false;
+    super.takeDamage(from);
   }
 
   /**

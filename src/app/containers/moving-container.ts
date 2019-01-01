@@ -4,7 +4,7 @@ import { Graphics, Sprite, Texture, ZContainer } from '../pixi-alias';
  * Has velocity and update. And shadow and z (elevation)
  */
 export class MovingContainer extends ZContainer {
-
+  /** Velocity */
   public dx: number = 0;
   public dy: number = 0;
   public dz: number = 0;
@@ -100,7 +100,7 @@ export class MovingContainer extends ZContainer {
   public postUpdate(delta: number): void {
     this.x += this.dx * delta;
     this.y += this.dy * delta;
-    // Update elevation
+    // Update elevation (z)
     if (this.dz !== 0) {
       this.setZ(this.z + this.dz * delta);
       if (this.z < 0) {

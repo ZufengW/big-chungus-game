@@ -125,19 +125,19 @@ function play(delta: number) {
   chungus.update(delta);
   elmer.update(delta);
 
-  // postUpdate to update positions using velocity
+  // postUpdate everything
   chungus.postUpdate(delta);
   elmer.postUpdate(delta);
 
-  // Constrain explorer to keep it within walls
+  // Constrain chungus to keep it within walls
   chungus.constrainPosition(
     DUNGEON_MIX_X, DUNGEON_MAX_X,
     DUNGEON_MIN_Y, DUNGEON_MAX_Y,
   );
 
   chungus.isHit = false;  // reset
-  if (chungus.collision(treasure)) {
-    chungus.isHit = true;
+  if (chungus.collision(elmer)) {
+    elmer.takeDamage(chungus);
   }
 
   // Update layer order
