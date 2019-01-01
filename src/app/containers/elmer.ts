@@ -1,15 +1,29 @@
 import {
+  Graphics,
   Point,
   Texture,
 } from '../pixi-alias';
 import { MovingContainer } from './moving-container';
 
+/** Elmer's states */
+enum State {
+  Starting,
+  Active,
+  Attacking,
+  Leaving,
+  Inactive
+}
+
 const SCALE = 0.6;
 const MOVE_SPEED = 3;
+const SCALED_BODY_HEIGHT_GUN_RATIO = 0.08;
+const AIM_LINE_LENGTH = 1000;
 
 export class Elmer extends MovingContainer {
   public isHit: boolean = false;
   private enemy: MovingContainer;
+  private aimLine: Graphics;
+  private state = State.Starting;
 
   constructor(texture: Texture, enemy: MovingContainer) {
     super(texture);
@@ -23,6 +37,17 @@ export class Elmer extends MovingContainer {
     // Need to move body to compensate for anchor
     this.body.x = this.body.width / 2;
     this.body.y = this.body.height / 2;
+
+    // line for aiming
+    const line = new Graphics();
+    line.lineStyle(4, 0xFFFFFF, 1);
+    line.moveTo(0, 0);
+    line.lineTo(AIM_LINE_LENGTH, 0);
+    line.x = this.body.width / 2;
+    line.y = this.body.height * SCALED_BODY_HEIGHT_GUN_RATIO;
+    this.body.addChild(line);
+    this.aimLine = line;
+    // line.visible = false;
   }
 
   public update(delta: number): void {
@@ -43,11 +68,21 @@ export class Elmer extends MovingContainer {
     // Calculate approximate angle
     const angle = Math.atan2(pos.y - this.y, pos.x - this.x);
     if (pos.x < this.x && this.body.scale.y > 0) {
-      console.log('asdf');
       this.body.scale.y = -1;
     } else if (pos.x > this.x && this.body.scale.y < 0) {
       this.body.scale.y = 1;
     }
     this.body.rotation = angle;
   }
+
+  private chargeGun(delta: number) {
+    const nextAlpha = this.aimLine.alpha + (delta / 100);
+    if (nextAlpha > 1) {
+      this.aimLine.alpha = 1;
+      // TODO: fire gun
+      this.aimLine.tint = 0xFFFF00;
+    } else {
+      this.aimLine.alpha = nextAlpha;
+    }
+  };
 }
