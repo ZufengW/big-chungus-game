@@ -1,11 +1,11 @@
-import { MovingContainer } from './containers/moving-container';
+import { normalise } from './helpers';
 
 /**
  * For getting user input.
  */
 
 /**
- * Set up arrow keys for a sprite to move
+ * Set up arrow keys for a sprite to move.
  * @param spriteToMove
  * @param speed move speed
  */
@@ -20,7 +20,7 @@ export function setupMoveKeys(): () => [number, number] {
   const s = keyboard('s');
   const d = keyboard('d');
 
-  // function to call to get resultant direction
+  // function to call to get resultant input direction
   return (): [number, number] => {
     // resultant x and y
     let x = 0;
@@ -38,8 +38,7 @@ export function setupMoveKeys(): () => [number, number] {
     if (left.isDown || a.isDown) {
       x -= 1;
     }
-    // TODO: normalise
-    return [x, y];
+    return normalise([x, y]);
   };
 }
 
