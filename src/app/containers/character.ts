@@ -68,7 +68,7 @@ export class Character extends MovingContainer {
     this.stateTime = 0;
     this.state = State.Leaving;
     this.dz = 40;
-    this.rotateSpeed = (Math.random() * 2) - 1;
+    this.rotateSpeed = (Math.random()) - 0.5;
   }
 
   /**
