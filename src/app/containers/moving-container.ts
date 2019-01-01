@@ -4,14 +4,16 @@ import { Graphics, Sprite, Texture, ZContainer } from '../pixi-alias';
  * Has velocity and update. And shadow and z (elevation)
  */
 export class MovingContainer extends ZContainer {
+
   public dx: number = 0;
   public dy: number = 0;
-  /** elevation */
-  public z: number = 0;
+  public dz: number = 0;
   /** What order to render in */
   public zIndex: number = 0;
   /** the main Sprite of the container */
   public body: Sprite;
+  /** elevation */
+  private z: number = 0;
   /** half the original width of the container's shadow */
   private originalRadius: number;
   /** scaled */
@@ -51,6 +53,12 @@ export class MovingContainer extends ZContainer {
     // TODO: set anchor!
     this.pivot.set(halfWidth, texture.height);
 
+    // Allow body to rotate around middle
+    const halfBodyWidth = this.body.width / 2;
+    const halfBodyHeight = this.body.height / 2;
+    this.body.anchor.set(0.5, 0.5);
+    // Need to move body's position to compensate for anchor
+    this.body.position.set(halfBodyWidth, halfBodyHeight);
     // MovingContainers only collide at the bottom
   }
 
@@ -68,17 +76,36 @@ export class MovingContainer extends ZContainer {
   }
 
   /**
+   * Set the elevation
+   * @param z new z value
+   */
+  public setZ(z: number): void {
+    this.z = z;
+    this.body.y = (this.body.height / 2) - this.z;
+  }
+
+  public getZ(): number {
+    return this.z;
+  }
+
+  /**
    * Updates position using velocity. Call this after update().
    * @param delta frame time
    */
   public postUpdate(delta: number): void {
     this.x += this.dx * delta;
     this.y += this.dy * delta;
+    // Update elevation
+    if (this.dz !== 0) {
+      this.setZ(this.z + this.dz * delta);
+      if (this.z < 0) {
+        this.setZ(0);
+        this.dz = 0;
+      }
+    }
 
     // Update draw layer
     this.updateZIndex();
-
-    // TODO: height
   }
 
   /**

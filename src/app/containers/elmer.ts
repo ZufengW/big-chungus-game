@@ -11,9 +11,10 @@ enum State {
   Active,
   Attacking,
   Leaving,
-  Inactive
+  Inactive,
 }
 
+const STARTING_ELEVATION = 500;
 const SCALE = 0.6;
 const MOVE_SPEED = 3;
 const SCALED_BODY_HEIGHT_GUN_RATIO = 0.08;
@@ -32,11 +33,22 @@ export class Elmer extends MovingContainer {
     // make smaller
     this.setScale(SCALE);
 
-    // Allow body to rotate around middle
-    this.body.anchor.set(0.5, 0.5);
-    // Need to move body to compensate for anchor
-    this.body.x = this.body.width / 2;
-    this.body.y = this.body.height / 2;
+    // start state
+    this.setZ(STARTING_ELEVATION);
+    this.dz = -1;
+
+    // // Allow body to rotate around middle
+    // const halfBodyWidth = this.body.width / 2;
+    // const halfBodyHeight = this.body.height / 2;
+    // this.body.anchor.set(0.5, 0.5);
+    // // Need to move body to compensate for anchor
+    // this.body.position.set(halfBodyWidth, halfBodyHeight);
+
+    // const halfBodyWidth = this.body.width / 2;
+    // const halfBodyHeight = this.body.height / 2;
+    // this.body.pivot.set(halfBodyWidth, halfBodyHeight);
+    // // Need to move body to compensate for anchor
+    // this.body.position.set(halfBodyWidth, halfBodyHeight);
 
     // line for aiming
     const line = new Graphics();
@@ -51,6 +63,11 @@ export class Elmer extends MovingContainer {
   }
 
   public update(delta: number): void {
+    if (this.state === State.Starting) {
+      this.updateStarting(delta);
+      return;
+    }
+
     // change state if hit
     if (this.isHit) {
       this.body.tint = 0xff0000;
@@ -58,6 +75,19 @@ export class Elmer extends MovingContainer {
 
     // TODO: walk / aim / shoot
     this.aimGun(this.enemy.position);
+  }
+
+  /**
+   * Accelerate downwards until hit ground. Then change state to Active.
+   * @param delta frame time
+   */
+  private updateStarting(delta: number) {
+    const z = this.getZ();
+    if (z > 0) {
+      this.dz -= delta;
+      return;
+    }
+    this.state = State.Active;
   }
 
   /**
@@ -84,5 +114,5 @@ export class Elmer extends MovingContainer {
     } else {
       this.aimLine.alpha = nextAlpha;
     }
-  };
+  }
 }

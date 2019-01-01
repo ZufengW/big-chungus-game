@@ -1,5 +1,6 @@
 import './../styles/app.css';
 import { Chungus } from './containers/chungus';
+import { Elmer } from './containers/elmer';
 import { HealthBar } from './containers/health-bar';
 import { Treasure } from './containers/treasure';
 import { randRange } from './helpers';
@@ -13,7 +14,6 @@ import {
   utils,
   ZContainer,
 } from './pixi-alias';
-import { Elmer } from './containers/elmer';
 
 let type: string = 'WebGL';
 if (!utils.isWebGLSupported()) {
