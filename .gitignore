@@ -1,0 +1,8 @@
+node_modules
+public
+
+# Don't commit assets because they might change in the future
+src/assets
+
+.DS_Store
+.idea

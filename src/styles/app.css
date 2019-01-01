@@ -1,0 +1,30 @@
+body {
+  background-color: rgb(23, 24, 28);
+  color: rgb(216, 213, 209);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+a {
+  color: rgb(77, 172, 253);
+}
+
+h1 {
+  text-align: center;
+}
+
+canvas {
+  /* to center the canvas within its parent */
+  display: inline-block;
+}
+
+#container {
+  position: absolute;
+  left: 50%;
+  margin-right: -50%;
+  transform: translate(-50%, 0)
+}
+
+#canvas-div {
+  text-align: center;
+}
+
