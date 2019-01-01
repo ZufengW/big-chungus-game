@@ -67,7 +67,6 @@ const DUNGEON_MIX_X = 32;
 const DUNGEON_MAX_X = 512 - 32;
 const DUNGEON_MIN_Y = 32;
 const DUNGEON_MAX_Y = 480;
-const CHUNGUS_SPEED = 4;
 
 function setup() {
   // clear the loadingP
@@ -83,7 +82,7 @@ function setup() {
   app.stage.addChild(zStage);
 
   // Create the player
-  chungus = new Chungus(resources[CHUNGUS_PATH].texture, CHUNGUS_SPEED);
+  chungus = new Chungus(resources[CHUNGUS_PATH].texture);
   chungus.position.set(100, app.stage.height / 2);
   zStage.addChild(chungus);
 

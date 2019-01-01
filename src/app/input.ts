@@ -9,60 +9,37 @@ import { MovingContainer } from './containers/moving-container';
  * @param spriteToMove
  * @param speed move speed
  */
-export function setupMoveKeys(spriteToMove: MovingContainer, speed: number) {
-  // Capture the keyboard arrow keys
+export function setupMoveKeys(): () => [number, number] {
+  // Capture the keyboard arrow keys and WASD
   const left = keyboard('ArrowLeft');
   const up = keyboard('ArrowUp');
   const right = keyboard('ArrowRight');
   const down = keyboard('ArrowDown');
+  const w = keyboard('w');
+  const a = keyboard('a');
+  const s = keyboard('s');
+  const d = keyboard('d');
 
-  // Left arrow key `press` method
-  left.press = () => {
-    spriteToMove.dx = -speed;
-    spriteToMove.dy = 0;
-  };
+  // function to call to get resultant direction
+  return (): [number, number] => {
+    // resultant x and y
+    let x = 0;
+    let y = 0;
 
-  // Left arrow key `release` method
-  left.release = () => {
-    // If the left arrow has been released, and the right arrow isn't down,
-    // and the spriteToMove isn't moving vertically:
-    // Stop the spriteToMove
-    if (!right.isDown && spriteToMove.dy === 0) {
-      spriteToMove.dx = 0;
+    if (up.isDown || w.isDown) {
+      y -= 1;
     }
-  };
-
-  // Up
-  up.press = () => {
-    spriteToMove.dy = -speed;
-    spriteToMove.dx = 0;
-  };
-  up.release = () => {
-    if (!down.isDown && spriteToMove.dx === 0) {
-      spriteToMove.dy = 0;
+    if (right.isDown || d.isDown) {
+      x += 1;
     }
-  };
-
-  // Right
-  right.press = () => {
-    spriteToMove.dx = speed;
-    spriteToMove.dy = 0;
-  };
-  right.release = () => {
-    if (!left.isDown && spriteToMove.dy === 0) {
-      spriteToMove.dx = 0;
+    if (down.isDown || s.isDown) {
+      y += 1;
     }
-  };
-
-  // Down
-  down.press = () => {
-    spriteToMove.dy = speed;
-    spriteToMove.dx = 0;
-  };
-  down.release = () => {
-    if (!up.isDown && spriteToMove.dx === 0) {
-      spriteToMove.dy = 0;
+    if (left.isDown || a.isDown) {
+      x -= 1;
     }
+    // TODO: normalise
+    return [x, y];
   };
 }
 
