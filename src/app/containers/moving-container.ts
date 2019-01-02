@@ -65,7 +65,11 @@ export class MovingContainer extends ZContainer {
   }
 
   public update(delta: number): void {
-    return;
+    // update z like gravity
+    this.dz -= delta;
+    if (this.z < 0) {
+      this.dz = 0;
+    }
   }
 
   /**

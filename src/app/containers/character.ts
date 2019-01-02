@@ -78,7 +78,6 @@ export class Character extends MovingContainer {
   private updateStarting(delta: number) {
     const z = this.getZ();
     if (z > 0) {
-      this.dz -= delta;
       return;
     }
     this.state = State.Active;
@@ -95,7 +94,6 @@ export class Character extends MovingContainer {
       this.state = State.Inactive;
       this.visible = false;
     }
-    this.dz -= delta;
     this.body.rotation += this.rotateSpeed;
   }
 }
