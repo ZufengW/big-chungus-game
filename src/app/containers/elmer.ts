@@ -46,7 +46,7 @@ export class Elmer extends Character {
     super.update(delta);
 
     // TODO: walk / aim / shoot when Active
-    if (super.getState() === State.Active) {
+    if (super.isActive()) {
       this.aimGun(this.enemy.position);
     }
   }

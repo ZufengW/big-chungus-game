@@ -17,6 +17,7 @@ export class ZContainer extends Container {
   }
 }
 import Graphics = PIXI.Graphics;
+import InteractionManager = PIXI.interaction.InteractionManager;
 import loader = PIXI.loader;
 import Point = PIXI.Point;
 import Rectangle = PIXI.Rectangle;
@@ -31,6 +32,7 @@ export {
   Circle,
   Container,
   Graphics,
+  InteractionManager,
   loader,
   Point,
   Rectangle,

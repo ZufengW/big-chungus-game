@@ -3,11 +3,12 @@ import { Chungus } from './containers/chungus';
 import { Elmer } from './containers/elmer';
 import { HealthBar } from './containers/health-bar';
 import { Treasure } from './containers/treasure';
-import { randRange } from './helpers';
 import {
   Application,
   Container,
+  InteractionManager,
   loader,
+  Point,
   Sprite,
   Text,
   TextStyle,
@@ -28,6 +29,8 @@ const APP_WIDTH = 640;  // 1:1 aspect ratio
 const app = new Application({width: APP_WIDTH, height: APP_WIDTH});
 app.renderer.autoResize = true;
 app.renderer.resize(APP_WIDTH, APP_WIDTH);
+/** interactionManager: deals with mouse, touch and pointer events */
+const interaction: InteractionManager = app.renderer.plugins.interaction;
 
 // The app creates a canvas element for you that you
 // can then insert into the DOM
@@ -59,6 +62,8 @@ let chungus: Chungus;  // the player
 let elmer: Elmer;
 let treasure: Treasure;  // treasure chest
 let healthBar: HealthBar;  // player's health bar
+/** mouse position in stage coordinates */
+let stageMousePos: Point = new Point(0, 0);
 // Sub-container within app.stage that only holds things with zIndex
 const zStage = new Container();
 
@@ -80,6 +85,9 @@ function setup() {
   app.stage.addChild(dungeon);
 
   app.stage.addChild(zStage);
+
+  // TODO: set dynamically
+  app.stage.position.set(80, 80);
 
   // Create the player
   chungus = new Chungus(resources[CHUNGUS_PATH].texture);
@@ -122,6 +130,8 @@ function play(delta: number) {
 
   // Update everything
   chungus.update(delta);
+  checkMouse();
+  chungus.dashDest = stageMousePos;
   elmer.update(delta);
 
   // postUpdate everything
@@ -174,4 +184,18 @@ function showEndMessage(message: string): Text {
   textMessage.y = app.stage.height / 2;
   app.stage.addChild(textMessage);
   return textMessage;
+}
+
+/**
+ * check mouse input
+ */
+function checkMouse(): void {
+  // click
+  if (interaction.mouse.buttons !== 0) {
+    chungus.startChargingDash();
+  } else {
+    chungus.stopChargingDash();
+  }
+  // this is actually reassigning to itself...
+  stageMousePos = interaction.mouse.getLocalPosition(app.stage, stageMousePos);
 }

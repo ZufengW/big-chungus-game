@@ -57,8 +57,13 @@ export class Character extends MovingContainer {
     this.setStateLeaving();
   }
 
-  protected getState() {
+  protected getState(): State {
     return this.state;
+  }
+
+  /** Returns whether or not current State is Active */
+  protected isActive(): boolean {
+    return this.state === State.Active;
   }
 
   /**
