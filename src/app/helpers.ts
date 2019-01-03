@@ -39,3 +39,13 @@ export function normalise([x, y]: [number, number]): [number, number] {
   const length = Math.sqrt((x * x) + (y * y));
   return [x / length, y / length];
 }
+
+/**
+ * Convert rgb to colour number (hex)
+ * @param r red
+ * @param g blue
+ * @param b green
+ */
+export function rgb(r: number, g: number, b: number): number {
+  return r * 256 * 256 + g * 256 + b;
+}

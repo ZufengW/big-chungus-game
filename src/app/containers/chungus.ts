@@ -1,11 +1,12 @@
-import { normalise } from '../helpers';
+import { angleBetweenPoints, normalise, rgb } from '../helpers';
 import { setupMoveKeys } from '../input';
 import {
-  Point, Texture,
+  Graphics, Point, Texture,
 } from '../pixi-alias';
 import { Character } from './character';
 
 const MOVE_SPEED = 4;
+const CHARGE_MOVE_SPEED_PENALTY = 2;
 
 // times are in frames
 const MIN_DASH_CHARGE_TIME = 60;
@@ -25,6 +26,8 @@ export class Chungus extends Character {
   public dashDest: Point = new Point(0, 0);
   /** Also represents whether or not charging a dash */
   private dashChargeTime: number = 0;
+  /** visual indicator of dash charging */
+  private dashAim: Graphics;
   private activeState: ActiveState = ActiveState.Walking;
 
   private getInput: () => [number, number];
@@ -37,6 +40,23 @@ export class Chungus extends Character {
 
     // TODO: revise use of setup functions here. Maybe move out
     this.getInput = setupMoveKeys();
+
+    // line for aiming the dash
+    const triangle = new Graphics();
+    triangle.beginFill(0xFFFFFF);
+    triangle.moveTo(0, 0);
+    // The triangle's x/y position is anchored to its first point in the path
+    triangle.lineTo(0, 0);
+    triangle.lineTo(-10, -40);
+    triangle.lineTo(80, 0);
+    triangle.lineTo(-10, 40);
+    triangle.lineTo(0, 0);
+    triangle.pivot.set(-50, 0);
+    this.addChildAt(triangle, 1);
+    triangle.x = this.body.width / 2;
+    triangle.y = this.body.height;
+    this.dashAim = triangle;
+    this.resetDash();
   }
 
   public update(delta: number): void {
@@ -64,6 +84,7 @@ export class Chungus extends Character {
     if (this.dashChargeTime === 0
         && this.activeState === ActiveState.Walking && super.isActive()) {
       this.dashChargeTime = 1;
+      this.dashAim.visible = true;
     }
   }
 
@@ -93,23 +114,48 @@ export class Chungus extends Character {
     this.dx = xDiff * dashPower;
     this.dy = yDiff * dashPower;
     this.dz += dashPower;
-    // Reset
-    this.dashChargeTime = 0;
+    // Reset things
+    this.resetDash();
   }
 
   /** update during Walking state */
   private updateWalking(delta: number): void {
     // Get user input
     const [inX, inY] = this.getInput();
-    this.dx = inX * MOVE_SPEED;
-    this.dy = inY * MOVE_SPEED;
+    let convertedMoveSpeed = MOVE_SPEED;
     // tint differently if hurt
     this.body.tint = this.isHit ? 0xff0000 : 0xffffff;
 
     // Keep charging dash
     if (this.dashChargeTime > 0) {
       this.dashChargeTime += delta;
+
+      if (this.dashChargeTime > MAX_DASH_CHARGE_TIME) {
+        this.dashChargeTime = MAX_DASH_CHARGE_TIME;
+      } else if (this.dashChargeTime > MIN_DASH_CHARGE_TIME) {
+        this.dashAim.tint = 0xffffaa;
+      } else {
+        // if not yet reach min charge, tint in grayscale
+        const chargeAmount = Math.round(
+            255 * this.dashChargeTime / MIN_DASH_CHARGE_TIME,
+        );
+        this.dashAim.tint = rgb(chargeAmount, chargeAmount, chargeAmount);
+      }
+
+      // Update the aiming line
+      const angle = angleBetweenPoints(this.position, this.dashDest);
+      this.dashAim.rotation = angle;
+      this.dashAim.width = this.dashChargeTime;
+      /** How far the dash has been charged [0..1] */
+      const chargeRatio = this.dashChargeTime / MAX_DASH_CHARGE_TIME;
+      this.dashAim.alpha = chargeRatio;
+      // Player moves slower the longer they charge
+      convertedMoveSpeed -= chargeRatio * CHARGE_MOVE_SPEED_PENALTY;
     }
+
+    // Update player's velocity
+    this.dx = inX * convertedMoveSpeed;
+    this.dy = inY * convertedMoveSpeed;
   }
 
   /** update during Dashing state */
@@ -122,5 +168,13 @@ export class Chungus extends Character {
     if (this.dx < MOVE_SPEED && this.dy < MOVE_SPEED && this.getZ() === 0) {
       this.activeState = ActiveState.Walking;
     }
+  }
+
+  /** Reset dash variables */
+  private resetDash() {
+    this.dashChargeTime = 0;
+    this.dashAim.visible = false;
+    this.dashAim.alpha = 0;
+    this.dashAim.tint = 0x000000;
   }
 }
