@@ -1,8 +1,10 @@
 import './../styles/app.css';
+import { CharacterFactory } from './containers/character_factory';
 import { Chungus } from './containers/chungus';
 import { Elmer } from './containers/elmer';
 import { HealthBar } from './containers/health-bar';
 import { Treasure } from './containers/treasure';
+import { randRange } from './helpers';
 import {
   Application,
   Container,
@@ -59,7 +61,10 @@ function loadProgressHandler(load, resource) {
 // Things used in the game
 let gameState: (delta: number) => void;
 let chungus: Chungus;  // the player
-let elmer: Elmer;
+const ELMER_SPAWN_COOLDOWN = 100;
+// Current cooldown between elmer spawns (frames)
+let elmerSpawnCooldown = ELMER_SPAWN_COOLDOWN;
+let elmerFactory: CharacterFactory<Elmer>;
 let treasure: Treasure;  // treasure chest
 let healthBar: HealthBar;  // player's health bar
 /** mouse position in stage coordinates */
@@ -101,8 +106,12 @@ function setup() {
   zStage.addChild(treasure);
   treasure.updateZIndex();
 
-  // Create an enemy
-  elmer = new Elmer(resources[ELMER_PATH].texture, chungus);
+  // Create an enemy factory
+  elmerFactory = new CharacterFactory<Elmer>(() => {
+    return new Elmer(resources[ELMER_PATH].texture, chungus);
+  });
+  // Spawn an enemy
+  const elmer = elmerFactory.spawn();
   zStage.addChild(elmer);
   elmer.position.set(200, 300);
 
@@ -127,16 +136,24 @@ function gameLoop(delta: number) {
  * @param delta frame time difference
  */
 function play(delta: number) {
+  // Spawn new elmer every 5 seconds
+  elmerSpawnCooldown -= delta;
+  if (elmerSpawnCooldown < 0) {
+    elmerSpawnCooldown = ELMER_SPAWN_COOLDOWN;
+    const elmer = elmerFactory.spawn();
+    zStage.addChild(elmer);
+    elmer.position.set(randRange(100, 400), randRange(100, 400));
+  }
 
   // Update everything
   chungus.update(delta);
   checkMouse();
   chungus.dashDest = stageMousePos;
-  elmer.update(delta);
+  elmerFactory.forEach((elmer) => {elmer.update(delta); });
 
   // postUpdate everything
   chungus.postUpdate(delta);
-  elmer.postUpdate(delta);
+  elmerFactory.forEach((elmer) => {elmer.postUpdate(delta); });
 
   // Constrain chungus to keep it within walls
   chungus.constrainPosition(
@@ -145,8 +162,12 @@ function play(delta: number) {
   );
 
   chungus.isHit = false;  // reset
-  if (chungus.isDashing() && chungus.collision(elmer)) {
-    elmer.takeDamage(chungus);
+  if (chungus.isDashing()) {
+    elmerFactory.forEach((elmer) => {
+      if (chungus.collision(elmer)) {
+        elmer.takeDamage(chungus);
+      }
+    });
   }
 
   // Update layer order

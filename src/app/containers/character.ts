@@ -23,10 +23,7 @@ export class Character extends MovingContainer {
 
   constructor(texture: Texture) {
     super(texture);
-
-    // start state
-    this.setZ(STARTING_ELEVATION);
-    this.dz = -1;
+    this.init();
   }
 
   public update(delta: number) {
@@ -55,6 +52,31 @@ export class Character extends MovingContainer {
       this.dy += from.dy + Math.random();
     }
     this.setStateLeaving();
+  }
+
+  public isInactive(): boolean {
+    return this.state === State.Inactive;
+  }
+
+  /**
+   * Resets a character to Entering without using new keyword
+   * Should override this class
+   */
+  public init() {
+    this.state = State.Entering;
+    this.stateTime = 0;
+    this.rotateSpeed = 0;
+    this.visible = true;
+    // reset displacement
+    this.x = 0;
+    this.y = 0;
+    // reset velocity
+    this.dx = 0;
+    this.dy = 0;
+    this.body.rotation = 0;
+    // start in the sky
+    this.setZ(STARTING_ELEVATION);
+    this.dz = -1;
   }
 
   protected getState(): State {

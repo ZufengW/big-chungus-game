@@ -42,6 +42,11 @@ export class Elmer extends Character {
     // line.visible = false;
   }
 
+  public init() {
+    super.init();
+    //  this.aimLine.visible = false;
+  }
+
   public update(delta: number): void {
     super.update(delta);
 
