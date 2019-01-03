@@ -9,7 +9,7 @@ const MOVE_SPEED = 4;
 
 // times are in frames
 const MIN_DASH_CHARGE_TIME = 60;
-const MAX_DASH_CHARGE_TIME = 240;
+const MAX_DASH_CHARGE_TIME = 180;
 const CHARGE_XY_DAMP_FACTOR = 0.96;
 
 /** Chungus's active substates */

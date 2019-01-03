@@ -190,11 +190,11 @@ function showEndMessage(message: string): Text {
  * check mouse input
  */
 function checkMouse(): void {
-  // click
+  // If mouse down, stop charging dash.
   if (interaction.mouse.buttons !== 0) {
-    chungus.startChargingDash();
-  } else {
     chungus.stopChargingDash();
+  } else {
+    chungus.startChargingDash();
   }
   // this is actually reassigning to itself...
   stageMousePos = interaction.mouse.getLocalPosition(app.stage, stageMousePos);
