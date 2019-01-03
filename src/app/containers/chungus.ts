@@ -117,6 +117,11 @@ export class Chungus extends Character {
     this.resetDash();
   }
 
+  /** Whether or not chungus is dashing */
+  public isDashing(): boolean {
+    return this.activeState === ActiveState.Dashing;
+  }
+
   /** update during Walking state */
   private updateWalking(delta: number): void {
     // Get user input

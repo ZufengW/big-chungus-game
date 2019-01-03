@@ -145,7 +145,7 @@ function play(delta: number) {
   );
 
   chungus.isHit = false;  // reset
-  if (chungus.collision(elmer)) {
+  if (chungus.isDashing() && chungus.collision(elmer)) {
     elmer.takeDamage(chungus);
   }
 
