@@ -6,7 +6,6 @@ import {
 import { Character } from './character';
 
 const MOVE_SPEED = 4;
-const CHARGE_MOVE_SPEED_PENALTY = 2;
 
 // times are in frames
 const MIN_DASH_CHARGE_TIME = 60;
@@ -122,7 +121,6 @@ export class Chungus extends Character {
   private updateWalking(delta: number): void {
     // Get user input
     const [inX, inY] = this.getInput();
-    let convertedMoveSpeed = MOVE_SPEED;
     // tint differently if hurt
     this.body.tint = this.isHit ? 0xff0000 : 0xffffff;
 
@@ -149,13 +147,11 @@ export class Chungus extends Character {
       /** How far the dash has been charged [0..1] */
       const chargeRatio = this.dashChargeTime / MAX_DASH_CHARGE_TIME;
       this.dashAim.alpha = chargeRatio;
-      // Player moves slower the longer they charge
-      convertedMoveSpeed -= chargeRatio * CHARGE_MOVE_SPEED_PENALTY;
     }
 
     // Update player's velocity
-    this.dx = inX * convertedMoveSpeed;
-    this.dy = inY * convertedMoveSpeed;
+    this.dx = inX * MOVE_SPEED;
+    this.dy = inY * MOVE_SPEED;
   }
 
   /** update during Dashing state */
