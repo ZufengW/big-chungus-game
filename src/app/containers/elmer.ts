@@ -25,6 +25,10 @@ export class Elmer extends Character {
   private enemy: MovingContainer;
   private aimLine: Graphics;
   private activeState: ActiveState;
+  /** how much to strafe while walking. From [-2..2]
+   * Strafing is perpendicular movement.
+   */
+  private strafeFactor: number = 0;
 
   constructor(texture: Texture, enemy: MovingContainer) {
     super(texture);
@@ -43,12 +47,14 @@ export class Elmer extends Character {
     this.body.addChild(line);
     this.aimLine = line;
     // line.visible = false;
+    this.rerollStrafeFactor();
   }
 
   public init() {
     super.init();
     this.activeState = ActiveState.Walking;
     // this.aimLine.visible = false;  // undef?
+    this.rerollStrafeFactor();
   }
 
   /** Happens once each frame. Update velocity and stuff. */
@@ -73,14 +79,28 @@ export class Elmer extends Character {
    * @param delta frame time
    */
   private updateWalking(delta: number) {
+    // strafe
+    const [x, y] = pointTo(this.position, this.enemy.position);
+    // let dxNew = y;
+    // let dyNew = -x;
+    let dxNew = y * this.strafeFactor;
+    let dyNew = -x * this.strafeFactor;
+
     // Walk away if enemy is close
     if (distanceSquared(this.position, this.enemy.position) < FLEE_DIST_SQUARED) {
-      const [x, y] = normalise(pointTo(this.position, this.enemy.position));
-      this.dx = -x * MOVE_SPEED * delta;
-      this.dy = -y * MOVE_SPEED * delta;
+      dxNew -= x;
+      dyNew -= y;
     }
+    [dxNew, dyNew] = normalise([dxNew, dyNew]);
+    this.dx = dxNew * MOVE_SPEED * delta;
+    this.dy = dyNew * MOVE_SPEED * delta;
 
     this.aimGun(this.enemy.position);
+  }
+
+  /** get a new StrafeFactor. Use when wanting to change direction. */
+  private rerollStrafeFactor() {
+    this.strafeFactor = (Math.random() * 4) - 2;
   }
 
   /**
