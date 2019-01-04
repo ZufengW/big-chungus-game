@@ -1,9 +1,14 @@
 import { Character } from './character';
 
+export interface IRespawnable {
+  init(): void;
+  isInactive(): boolean;
+}
+
 /**
  * Manages an object pool of a particular kind of Character
  */
-export class CharacterFactory<T extends Character> {
+export class Factory<T extends IRespawnable> {
   private characters: T[] = [];
   private createNewCharacter: () => T;
 

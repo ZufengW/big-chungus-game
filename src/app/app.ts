@@ -1,7 +1,7 @@
 import './../styles/app.css';
-import { CharacterFactory } from './containers/character_factory';
 import { Chungus } from './containers/chungus';
 import { Elmer } from './containers/elmer';
+import { Factory } from './containers/factory';
 import { HealthBar } from './containers/health-bar';
 import { Treasure } from './containers/treasure';
 import { randRange } from './helpers';
@@ -64,7 +64,7 @@ let chungus: Chungus;  // the player
 const ELMER_SPAWN_COOLDOWN = 100;
 // Current cooldown between elmer spawns (frames)
 let elmerSpawnCooldown = ELMER_SPAWN_COOLDOWN;
-let elmerFactory: CharacterFactory<Elmer>;
+let elmerFactory: Factory<Elmer>;
 let treasure: Treasure;  // treasure chest
 let healthBar: HealthBar;  // player's health bar
 /** mouse position in stage coordinates */
@@ -107,7 +107,7 @@ function setup() {
   treasure.updateZIndex();
 
   // Create an enemy factory
-  elmerFactory = new CharacterFactory<Elmer>(() => {
+  elmerFactory = new Factory<Elmer>(() => {
     return new Elmer(resources[ELMER_PATH].texture, chungus);
   });
   // Spawn an enemy

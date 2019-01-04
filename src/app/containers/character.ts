@@ -1,6 +1,7 @@
 import {
   Texture,
 } from '../pixi-alias';
+import { IRespawnable } from './factory';
 import { MovingContainer } from './moving-container';
 
 /** Character states */
@@ -15,7 +16,7 @@ const STARTING_ELEVATION = 500;
 /** number of frames spend in leaving state */
 const LEAVING_DURATION = 60;
 
-export class Character extends MovingContainer {
+export class Character extends MovingContainer implements IRespawnable {
   private state = State.Entering;
   /** time spent in a state */
   private stateTime: number = 0;
