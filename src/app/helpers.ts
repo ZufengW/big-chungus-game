@@ -19,6 +19,24 @@ export function flipAngle(angle: number) {
 }
 
 /**
+ * @param p1 first point
+ * @param p2 second point
+ * @return squared distance between two points
+ */
+export function distanceSquared(p1: Point, p2: Point) {
+  return (p1.x - p2.x) ** 2 + (p1.y - p2.y) ** 2;
+}
+
+/**
+ * [x, y] pair from p1 to p2
+ * @param p1 start point
+ * @param p2 end point
+ */
+export function pointTo(p1: Point, p2: Point): [number, number] {
+  return [p2.x - p1.x, p2.y - p1.y];
+}
+
+/**
  * Returns angle (from x axis) in radians from p1 to p2
  * @param p1 start point
  * @param p2 destination point
@@ -47,5 +65,5 @@ export function normalise([x, y]: [number, number]): [number, number] {
  * @param b green
  */
 export function rgb(r: number, g: number, b: number): number {
-  return r * 256 * 256 + g * 256 + b;
+  return r * (256 ** 2) + g * 256 + b;
 }

@@ -1,27 +1,30 @@
-import { angleBetweenPoints } from '../helpers';
+import { angleBetweenPoints, distanceSquared, normalise, pointTo } from '../helpers';
 import {
   Graphics,
   Point,
   Texture,
 } from '../pixi-alias';
-import { Character, State } from './character';
+import { Character } from './character';
 import { MovingContainer } from './moving-container';
 
 /** Elmer's Active substates */
 enum ActiveState {
-  Idle,
+  Walking,
   Attacking,
 }
 
 const SCALE = 0.6;
-const MOVE_SPEED = 3;
+const MOVE_SPEED = 2;
 const SCALED_BODY_HEIGHT_GUN_RATIO = 0.08;
 const AIM_LINE_LENGTH = 1000;
+
+const FLEE_DIST_SQUARED = 200 ** 2;
 
 export class Elmer extends Character {
   public isHit: boolean = false;
   private enemy: MovingContainer;
   private aimLine: Graphics;
+  private activeState: ActiveState;
 
   constructor(texture: Texture, enemy: MovingContainer) {
     super(texture);
@@ -44,21 +47,40 @@ export class Elmer extends Character {
 
   public init() {
     super.init();
-    //  this.aimLine.visible = false;
+    this.activeState = ActiveState.Walking;
+    // this.aimLine.visible = false;  // undef?
   }
 
+  /** Happens once each frame. Update velocity and stuff. */
   public update(delta: number): void {
     super.update(delta);
 
     // TODO: walk / aim / shoot when Active
     if (super.isActive()) {
-      this.aimGun(this.enemy.position);
+      if (this.activeState === ActiveState.Walking) {
+        this.updateWalking(delta);
+      }
     }
   }
 
   public takeDamage(from?: Character) {
     this.aimLine.visible = false;
     super.takeDamage(from);
+  }
+
+  /**
+   * Walk around and aim gun
+   * @param delta frame time
+   */
+  private updateWalking(delta: number) {
+    // Walk away if enemy is close
+    if (distanceSquared(this.position, this.enemy.position) < FLEE_DIST_SQUARED) {
+      const [x, y] = normalise(pointTo(this.position, this.enemy.position));
+      this.dx = -x * MOVE_SPEED * delta;
+      this.dy = -y * MOVE_SPEED * delta;
+    }
+
+    this.aimGun(this.enemy.position);
   }
 
   /**

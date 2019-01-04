@@ -55,6 +55,11 @@ export class Character extends MovingContainer implements IRespawnable {
     this.setStateLeaving();
   }
 
+  /** Returns whether or not current State is Active */
+  public isActive(): boolean {
+    return this.state === State.Active;
+  }
+
   public isInactive(): boolean {
     return this.state === State.Inactive;
   }
@@ -82,11 +87,6 @@ export class Character extends MovingContainer implements IRespawnable {
 
   protected getState(): State {
     return this.state;
-  }
-
-  /** Returns whether or not current State is Active */
-  protected isActive(): boolean {
-    return this.state === State.Active;
   }
 
   /**

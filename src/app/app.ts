@@ -153,7 +153,16 @@ function play(delta: number) {
 
   // postUpdate everything
   chungus.postUpdate(delta);
-  elmerFactory.forEach((elmer) => {elmer.postUpdate(delta); });
+  elmerFactory.forEach((elmer) => {
+    elmer.postUpdate(delta);
+    if (elmer.isActive()) {
+      // Prevent elemer from leaving the map while active
+      elmer.constrainPosition(
+        DUNGEON_MIX_X, DUNGEON_MAX_X,
+        DUNGEON_MIN_Y, DUNGEON_MAX_Y,
+      );
+    }
+  });
 
   // Constrain chungus to keep it within walls
   chungus.constrainPosition(
