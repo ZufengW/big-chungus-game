@@ -2,6 +2,7 @@ import { angleBetweenPoints, distanceSquared, normalise, pointTo } from '../help
 import {
   Graphics,
   Point,
+  Sprite,
   Texture,
 } from '../pixi-alias';
 import { Character } from './character';
@@ -15,14 +16,17 @@ enum ActiveState {
 
 const SCALE = 0.6;
 const MOVE_SPEED = 2;
-const SCALED_BODY_HEIGHT_GUN_RATIO = 0.08;
+const SCALED_ARMS_HEIGHT_GUN_RATIO = 0.4;
 const AIM_LINE_LENGTH = 1000;
 
 const FLEE_DIST_SQUARED = 200 ** 2;
 const STRAFE_FACTOR_DURATION_MAX = 300;
 
+const HALF_PI = Math.PI / 2;
+
 export class Elmer extends Character {
   public isHit: boolean = false;
+  private arms: Sprite;
   private enemy: MovingContainer;
   private aimLine: Graphics;
   private activeState: ActiveState;
@@ -33,9 +37,16 @@ export class Elmer extends Character {
   /** how long before next reroll */
   private strafeFactorDuration: number = STRAFE_FACTOR_DURATION_MAX;
 
-  constructor(texture: Texture, enemy: MovingContainer) {
-    super(texture);
+  constructor(bodyTexture: Texture, armsTexture, enemy: MovingContainer) {
+    super(bodyTexture);
     this.enemy = enemy;
+
+    // set up arms
+    const arms = new Sprite(armsTexture);
+    arms.pivot.set(40, 25);
+    arms.position.set(-12, 15);
+    this.body.addChild(arms);
+    this.arms = arms;
 
     // make smaller
     this.setScale(SCALE);
@@ -45,9 +56,9 @@ export class Elmer extends Character {
     line.lineStyle(4, 0xFFFFFF, 1);
     line.moveTo(0, 0);
     line.lineTo(AIM_LINE_LENGTH, 0);
-    line.x = this.body.width / 2;
-    line.y = this.body.height * SCALED_BODY_HEIGHT_GUN_RATIO;
-    this.body.addChild(line);
+    line.x = this.arms.width;
+    line.y = this.arms.height * SCALED_ARMS_HEIGHT_GUN_RATIO;
+    this.arms.addChild(line);
     this.aimLine = line;
     // line.visible = false;
     this.rerollStrafeFactor();
@@ -115,17 +126,35 @@ export class Elmer extends Character {
 
   /**
    * Make elmer aim towards a postiion.
+   * Angle body half way, and arms the other half of the way.
    * @param pos position to aim at
    */
   private aimGun(pos: Point): void {
-    // Calculate approximate angle
+    // Calculate approximate angle from self position to target position
     const angle = angleBetweenPoints(this.position, pos);
-    if (pos.x < this.x && this.body.scale.y > 0) {
-      this.body.scale.y = -1;
-    } else if (pos.x > this.x && this.body.scale.y < 0) {
+    const halfAngle = angle / 2;
+
+    // TODO find something less hacky than this
+    if (pos.x < this.x) {
+      const halfAngleFlipped = halfAngle - HALF_PI;
+      // Treat these two quadrants differently because weird stuff
+      if (pos.y < this.y) {
+        this.body.scale.x = 1;
+        this.body.scale.y = -1;
+        this.arms.rotation = -halfAngleFlipped + Math.PI;
+      } else {
+        this.arms.rotation = -halfAngleFlipped;
+        this.body.scale.x = -1;
+        this.body.scale.y = 1;
+      }
+      this.body.rotation = halfAngleFlipped;
+    } else if (pos.x > this.x) {
+      // Target is on the right
+      this.body.scale.x = 1;
       this.body.scale.y = 1;
+      this.body.rotation = halfAngle;
+      this.arms.rotation = halfAngle;
     }
-    this.body.rotation = angle;
   }
 
   private chargeGun(delta: number) {

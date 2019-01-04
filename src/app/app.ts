@@ -43,13 +43,15 @@ const loadingP = document.getElementById('loading-p');
 
 const resources = loader.resources;  // Alias
 const CHUNGUS_PATH = './assets/big-chungus-smaller.png';
-const ELMER_PATH = './assets/elmer-sm.png';
+const ELMER_BODY_PATH = './assets/elmer-body-sm.png';
+const ELMER_ARMS_PATH = './assets/elmer-arms-sm.png';
 const TREASURE_HUNTER_PATH = './assets/treasureHunter.json';
 
 // Load the assets
 loader
   .add(CHUNGUS_PATH)
-  .add(ELMER_PATH)
+  .add(ELMER_BODY_PATH)
+  .add(ELMER_ARMS_PATH)
   .add(TREASURE_HUNTER_PATH)
   .on('progress', loadProgressHandler)
   .load(setup);
@@ -109,7 +111,11 @@ function setup() {
 
   // Create an enemy factory
   elmerFactory = new Factory<Elmer>(() => {
-    return new Elmer(resources[ELMER_PATH].texture, chungus);
+    return new Elmer(
+      resources[ELMER_BODY_PATH].texture,
+      resources[ELMER_ARMS_PATH].texture,
+      chungus,
+    );
   });
   // Spawn an enemy
   const elmer = elmerFactory.spawn();
