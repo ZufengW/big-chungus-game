@@ -19,6 +19,7 @@ const SCALED_BODY_HEIGHT_GUN_RATIO = 0.08;
 const AIM_LINE_LENGTH = 1000;
 
 const FLEE_DIST_SQUARED = 200 ** 2;
+const STRAFE_FACTOR_DURATION_MAX = 300;
 
 export class Elmer extends Character {
   public isHit: boolean = false;
@@ -29,6 +30,8 @@ export class Elmer extends Character {
    * Strafing is perpendicular movement.
    */
   private strafeFactor: number = 0;
+  /** how long before next reroll */
+  private strafeFactorDuration: number = STRAFE_FACTOR_DURATION_MAX;
 
   constructor(texture: Texture, enemy: MovingContainer) {
     super(texture);
@@ -94,6 +97,13 @@ export class Elmer extends Character {
     [dxNew, dyNew] = normalise([dxNew, dyNew]);
     this.dx = dxNew * MOVE_SPEED * delta;
     this.dy = dyNew * MOVE_SPEED * delta;
+
+    // Check if actually moved
+    this.strafeFactorDuration -= delta;
+    if (this.strafeFactorDuration < 0) {
+      this.strafeFactorDuration = STRAFE_FACTOR_DURATION_MAX * Math.random();
+      this.rerollStrafeFactor();
+    }
 
     this.aimGun(this.enemy.position);
   }
