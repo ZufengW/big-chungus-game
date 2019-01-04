@@ -71,6 +71,12 @@ export class Chungus extends Character {
         default:
           break;
       }
+      // Flip body depending on x velocity
+      if (this.dx < 0) {
+        this.body.scale.x = -1;
+      } else if (this.dx !== 0) {  // this.dx > 0
+        this.body.scale.x = 1;
+      }
     }
   }
 
