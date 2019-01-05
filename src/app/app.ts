@@ -72,7 +72,9 @@ let treasure: Treasure;  // treasure chest
 let healthBar: HealthBar;  // player's health bar
 /** mouse position in stage coordinates */
 let stageMousePos: Point = new Point(0, 0);
-// Sub-container within app.stage that only holds things with zIndex
+/** The map within the stage */
+let map: Sprite;
+/** Sub-container within map that only holds things with zIndex */
 const zStage = new Container();
 
 // Wall boundaries of dungeon.png
@@ -88,14 +90,10 @@ function setup() {
   /** Alias to point to the texture atlas's textures object */
   const id = loader.resources[TREASURE_HUNTER_PATH].textures;
 
-  // create and add the sprites
-  const dungeon = new Sprite(id['dungeon.png']);
-  app.stage.addChild(dungeon);
-
-  app.stage.addChild(zStage);
-
-  // TODO: set dynamically
-  app.stage.position.set(80, 80);
+  // Create the map and zStage
+  map = new Sprite(id['dungeon.png']);
+  app.stage.addChild(map);
+  map.addChild(zStage);
 
   // Create the player
   chungus = new Chungus(resources[CHUNGUS_PATH].texture);
@@ -188,8 +186,8 @@ function play(delta: number) {
 
   // Center the screen on Chungus
   const globalChungusPos = chungus.getGlobalPosition();
-  app.stage.x += APP_WIDTH_HALF - globalChungusPos.x;
-  app.stage.y += APP_WIDTH_HALF - globalChungusPos.y;
+  map.x += APP_WIDTH_HALF - globalChungusPos.x;
+  map.y += APP_WIDTH_HALF - globalChungusPos.y;
 
   // Update layer order
   updateLayersOrder();
