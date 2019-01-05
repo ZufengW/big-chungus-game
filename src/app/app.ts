@@ -77,6 +77,10 @@ let map: Sprite;
 /** Sub-container within map that only holds things with zIndex */
 const zStage = new Container();
 
+// UI
+let scoreText: Text;
+let score = 0;
+
 // Wall boundaries of dungeon.png
 const DUNGEON_MIX_X = 32;
 const DUNGEON_MAX_X = 512 - 32;
@@ -94,6 +98,8 @@ function setup() {
   map = new Sprite(id['dungeon.png']);
   app.stage.addChild(map);
   map.addChild(zStage);
+
+  scoreText = initScoreText();
 
   // Create the player
   chungus = new Chungus(resources[CHUNGUS_PATH].texture);
@@ -178,8 +184,9 @@ function play(delta: number) {
   chungus.isHit = false;  // reset
   if (chungus.isDashing()) {
     elmerFactory.forEach((elmer) => {
-      if (chungus.collision(elmer)) {
+      if (elmer.isActive() && chungus.collision(elmer)) {
         elmer.takeDamage(chungus);
+        addScore(1);
       }
     });
   }
@@ -205,10 +212,11 @@ function compareZIndex(a: ZContainer , b: ZContainer) {
   return a.zIndex - b.zIndex;
 }
 
-function showEndMessage(message: string): Text {
+/** initialise the Text that displays the game score */
+function initScoreText(): Text {
   const style = new TextStyle({
     fontFamily: 'Futura',
-    fontSize: 16,
+    fontSize: 32,
     fill: 'white',
     stroke: '#000000',
     strokeThickness: 6,
@@ -217,13 +225,23 @@ function showEndMessage(message: string): Text {
     dropShadowBlur: 4,
     dropShadowDistance: 6,
   });
-  const textMessage = new Text(message, style);
+  const textMessage = new Text('0', style);
   textMessage.anchor.set(0.5, 0.5);  // anchor right in the middle for spinning
   textMessage.rotation = 0.1;
-  textMessage.x = app.stage.width / 2;
-  textMessage.y = app.stage.height / 2;
+  textMessage.x = APP_WIDTH / 2;
+  textMessage.y = 60;
   app.stage.addChild(textMessage);
   return textMessage;
+}
+
+/**
+ * Add score
+ * @param n amount to add
+ */
+function addScore(n: number) {
+  score += n;
+  scoreText.rotation = Math.random() - 0.5;
+  scoreText.text = String(score);
 }
 
 /**
@@ -237,5 +255,5 @@ function checkMouse(): void {
     chungus.startChargingDash();
   }
   // this is actually reassigning to itself...
-  stageMousePos = interaction.mouse.getLocalPosition(app.stage, stageMousePos);
+  stageMousePos = interaction.mouse.getLocalPosition(map, stageMousePos);
 }
