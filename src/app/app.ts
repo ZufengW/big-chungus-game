@@ -87,6 +87,9 @@ const DUNGEON_MAX_X = 512 - 32;
 const DUNGEON_MIN_Y = 32;
 const DUNGEON_MAX_Y = 480;
 
+// Limit to number of instances
+const ELMER_POPULATION_LIMIT = 100;
+
 function setup() {
   // clear the loadingP
   loadingP.textContent = '';
@@ -121,7 +124,7 @@ function setup() {
       resources[ELMER_ARMS_PATH].texture,
       chungus,
     );
-  });
+  }, ELMER_POPULATION_LIMIT);
   // Spawn an enemy
   const elmer = elmerFactory.spawn();
   zStage.addChild(elmer);
@@ -153,8 +156,10 @@ function play(delta: number) {
   if (elmerSpawnCooldown < 0) {
     elmerSpawnCooldown = ELMER_SPAWN_COOLDOWN;
     const elmer = elmerFactory.spawn();
-    zStage.addChild(elmer);
-    elmer.position.set(randRange(100, 400), randRange(100, 400));
+    if (elmer) {
+      zStage.addChild(elmer);
+      elmer.position.set(randRange(100, 400), randRange(100, 400));
+    }
   }
 
   // Update everything
