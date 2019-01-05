@@ -17,7 +17,7 @@ import {
   utils,
   ZContainer,
 } from './pixi-alias';
-import { addScore, initScoreText } from './ui/score_text';
+import { addScore, initScoreText, updateScoreText } from './ui/score_text';
 
 let type: string = 'WebGL';
 if (!utils.isWebGLSupported()) {
@@ -199,7 +199,8 @@ function play(delta: number) {
 
   // Update layer order
   updateLayersOrder();
-
+  // update ui
+  updateScoreText(delta);
 }
 
 /**
