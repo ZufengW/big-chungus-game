@@ -17,6 +17,7 @@ import {
   utils,
   ZContainer,
 } from './pixi-alias';
+import { addScore, initScoreText } from './ui/score_text';
 
 let type: string = 'WebGL';
 if (!utils.isWebGLSupported()) {
@@ -79,7 +80,6 @@ const zStage = new Container();
 
 // UI
 let scoreText: Text;
-let score = 0;
 
 // Wall boundaries of dungeon.png
 const DUNGEON_MIX_X = 32;
@@ -99,7 +99,8 @@ function setup() {
   app.stage.addChild(map);
   map.addChild(zStage);
 
-  scoreText = initScoreText();
+  scoreText = initScoreText(APP_WIDTH_HALF, 60);
+  app.stage.addChild(scoreText);
 
   // Create the player
   chungus = new Chungus(resources[CHUNGUS_PATH].texture);
@@ -210,38 +211,6 @@ function updateLayersOrder(): void {
 
 function compareZIndex(a: ZContainer , b: ZContainer) {
   return a.zIndex - b.zIndex;
-}
-
-/** initialise the Text that displays the game score */
-function initScoreText(): Text {
-  const style = new TextStyle({
-    fontFamily: 'Futura',
-    fontSize: 32,
-    fill: 'white',
-    stroke: '#000000',
-    strokeThickness: 6,
-    dropShadow: true,
-    dropShadowColor: '#000000',
-    dropShadowBlur: 4,
-    dropShadowDistance: 6,
-  });
-  const textMessage = new Text('0', style);
-  textMessage.anchor.set(0.5, 0.5);  // anchor right in the middle for spinning
-  textMessage.rotation = 0.1;
-  textMessage.x = APP_WIDTH / 2;
-  textMessage.y = 60;
-  app.stage.addChild(textMessage);
-  return textMessage;
-}
-
-/**
- * Add score
- * @param n amount to add
- */
-function addScore(n: number) {
-  score += n;
-  scoreText.rotation = Math.random() - 0.5;
-  scoreText.text = String(score);
 }
 
 /**
