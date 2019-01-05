@@ -19,7 +19,7 @@ const MOVE_SPEED = 2;
 const SCALED_ARMS_HEIGHT_GUN_RATIO = 0.4;
 const AIM_LINE_LENGTH = 1000;
 
-const FLEE_DIST_SQUARED = 200 ** 2;
+const BASE_FLEE_DIST_SQUARED = 190 ** 2;
 const STRAFE_FACTOR_DURATION_MAX = 300;
 
 const HALF_PI = Math.PI / 2;
@@ -36,6 +36,7 @@ export class Elmer extends Character {
   private strafeFactor: number = 0;
   /** how long before next reroll */
   private strafeFactorDuration: number = STRAFE_FACTOR_DURATION_MAX;
+  private fleeDistSquared: number = 0;
 
   constructor(bodyTexture: Texture, armsTexture, enemy: MovingContainer) {
     super(bodyTexture);
@@ -101,7 +102,7 @@ export class Elmer extends Character {
     let dyNew = -x * this.strafeFactor;
 
     // Walk away if enemy is close
-    if (distanceSquared(this.position, this.enemy.position) < FLEE_DIST_SQUARED) {
+    if (distanceSquared(this.position, this.enemy.position) < this.fleeDistSquared) {
       dxNew -= x;
       dyNew -= y;
     }
@@ -119,9 +120,12 @@ export class Elmer extends Character {
     this.aimGun(this.enemy.position);
   }
 
-  /** get a new StrafeFactor. Use when wanting to change direction. */
+  /** Roll a new StrafeFactor and fleeDistSquared
+   * Use when wanting to change direction.
+   */
   private rerollStrafeFactor() {
     this.strafeFactor = (Math.random() * 4) - 2;
+    this.fleeDistSquared = BASE_FLEE_DIST_SQUARED + Math.random() * 100;
   }
 
   /**
