@@ -13,7 +13,6 @@ import {
   Point,
   Sprite,
   Text,
-  TextStyle,
   utils,
   ZContainer,
 } from './pixi-alias';

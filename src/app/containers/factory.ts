@@ -1,4 +1,3 @@
-import { Character } from './character';
 
 export interface IRespawnable {
   init(): void;
