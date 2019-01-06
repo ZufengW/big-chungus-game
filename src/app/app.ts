@@ -235,8 +235,8 @@ function play(delta: number) {
   bulletFactory.forEach((bullet) => {
     if (!bullet.isInactive()) {
       bullet.postUpdate(delta);
-      // Check for collision with chungus
-      if (chungus.isActive() && bullet.collision(chungus)) {
+      // Check for bullet collision with chungus
+      if (chungus.isVulnerable() && bullet.collision(chungus)) {
         chungus.takeDamage(bullet);
       }
     }
@@ -282,7 +282,7 @@ function play(delta: number) {
         addScore(1);
       }
     });
-  } else {
+  } else if (chungus.isVulnerable()) {
     // taz can damage chungus
     tazFactory.forEach((taz) => {
       if (taz.isAttacking() && chungus.collision(taz)) {

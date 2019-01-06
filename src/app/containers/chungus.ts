@@ -38,6 +38,7 @@ export class Chungus extends Character {
   private activeState: ActiveState = ActiveState.Walking;
   /** time spent in Hurt state */
   private hurtTime = 0;
+  private hp = 5;
   /** For the waddle animation. */
   private waddleState = 0;
   private waddleDirection = 1;
@@ -96,18 +97,19 @@ export class Chungus extends Character {
     }
   }
 
+  /** Whether or not taz is vulnerable to damage.
+   * Use this to save on collision checking.
+   */
+  public isVulnerable() {
+    // Chungus is invulnerable while dashing and hurt.
+    return super.isActive() && this.activeState === ActiveState.Walking;
+  }
+
+  /**
+   * Should check isVulnerable before doing this.
+   * @param from thing to take damage from.
+   */
   public takeDamage(from?: MovingContainer): void {
-    if (this.activeState === ActiveState.Dashing) {
-      // Chungus is invulnerable while dashing. Attacker bounces.
-      const dxNew = from.dy;
-      const dyNew = -from.dx;
-      from.dx = dxNew;
-      from.dy = dyNew;
-      return;
-    } else if (this.activeState === ActiveState.Hurt) {
-      // Chungus also invulnerable while hurt
-      return;
-    }
     this.body.tint = 0xff3333;
     if (!!from) {
       this.dx += from.dx + Math.random();
