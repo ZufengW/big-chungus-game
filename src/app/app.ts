@@ -141,7 +141,9 @@ function setup() {
 
   // Create the health bar and the player
   const healthBar = new HealthBar(5);
-  healthBar.position.set(100, 30);
+  healthBar.pivot.set(0, healthBar.height / 2);
+  healthBar.position.set(60, 60);
+
   chungus = new Chungus(resources[CHUNGUS_PATH].texture, healthBar);
   chungus.position.set(100, app.stage.height / 2);
   zStage.addChild(chungus);
