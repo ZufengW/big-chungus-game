@@ -4,6 +4,7 @@ import { Chungus } from './containers/chungus';
 import { Elmer } from './containers/elmer';
 import { Factory } from './containers/factory';
 import { HealthBar } from './containers/health-bar';
+import { Taz } from './containers/taz';
 import { Treasure } from './containers/treasure';
 import { randRange } from './helpers';
 import {
@@ -48,6 +49,8 @@ const ELMER_BODY_PATH = './assets/elmer-body-sm.png';
 const ELMER_ARMS_PATH = './assets/elmer-arms-sm.png';
 const TREASURE_HUNTER_PATH = './assets/treasureHunter.json';
 const BULLET_PATH = './assets/bullet.png';
+const TAZ_BODY_PATH = './assets/taz-body-sm.png';
+const TAZ_ARM_PATH = './assets/taz-arm-sm.png';
 
 // Load the assets
 loader
@@ -55,6 +58,8 @@ loader
   .add(ELMER_BODY_PATH)
   .add(ELMER_ARMS_PATH)
   .add(TREASURE_HUNTER_PATH)
+  .add(TAZ_BODY_PATH)
+  .add(TAZ_ARM_PATH)
   .add(BULLET_PATH)
   .on('progress', loadProgressHandler)
   .load(setup);
@@ -67,10 +72,25 @@ function loadProgressHandler(load, resource) {
 // Things used in the game
 let gameState: (delta: number) => void;
 let chungus: Chungus;  // the player
-const ELMER_SPAWN_COOLDOWN = 100;
+// Limit to number of instances
+const ENEMY_POPULATION_LIMIT = 70;
+
+const ELMER_SPAWN_COOLDOWN = 10000;
 // Current cooldown between elmer spawns (frames)
 let elmerSpawnCooldown = ELMER_SPAWN_COOLDOWN;
 let elmerFactory: Factory<Elmer>;
+
+const TAZ_SPAWN_COOLDOWN = 100;
+// Current cooldown between taz spawns (frames)
+let tazSpawnCooldown = TAZ_SPAWN_COOLDOWN;
+const tazFactory: Factory<Taz> = new Factory(
+  () => new Taz(
+    resources[TAZ_BODY_PATH].texture,
+    resources[TAZ_ARM_PATH].texture,
+    chungus,
+  ),
+  ENEMY_POPULATION_LIMIT,
+);
 const bulletFactory: Factory<Bullet> = new Factory(
   () => new Bullet(resources[BULLET_PATH].texture),
 );
@@ -92,9 +112,6 @@ const DUNGEON_MIX_X = 32;
 const DUNGEON_MAX_X = 512 - 32;
 const DUNGEON_MIN_Y = 32;
 const DUNGEON_MAX_Y = 480;
-
-// Limit to number of instances
-const ELMER_POPULATION_LIMIT = 100;
 
 function setup() {
   // clear the loadingP
@@ -145,7 +162,7 @@ function setup() {
       resources[ELMER_ARMS_PATH].texture,
       chungus,
     );
-  }, ELMER_POPULATION_LIMIT);
+  }, ENEMY_POPULATION_LIMIT);
   // Spawn an enemy
   const elmer = elmerFactory.spawn();
   zStage.addChild(elmer);
@@ -172,7 +189,7 @@ function gameLoop(delta: number) {
  * @param delta frame time difference
  */
 function play(delta: number) {
-  // Spawn new elmer every 5 seconds
+  // Spawn new elmer now and then
   elmerSpawnCooldown -= delta;
   if (elmerSpawnCooldown < 0) {
     elmerSpawnCooldown = ELMER_SPAWN_COOLDOWN;
@@ -182,12 +199,22 @@ function play(delta: number) {
       elmer.position.set(randRange(100, 400), randRange(100, 400));
     }
   }
+  tazSpawnCooldown -= delta;
+  if (tazSpawnCooldown < 0) {
+    tazSpawnCooldown = TAZ_SPAWN_COOLDOWN;
+    const taz = tazFactory.spawn();
+    if (taz) {
+      zStage.addChild(taz);
+      taz.position.set(randRange(100, 400), randRange(100, 400));
+    }
+  }
 
   // Update everything
   chungus.update(delta);
   checkMouse();
   chungus.dashDest = stageMousePos;
   elmerFactory.forEach((elmer) => {elmer.update(delta); });
+  tazFactory.forEach((taz) => {taz.update(delta); });
 
   // postUpdate everything
   chungus.postUpdate(delta);
@@ -203,8 +230,18 @@ function play(delta: number) {
   elmerFactory.forEach((elmer) => {
     elmer.postUpdate(delta);
     if (elmer.isActive()) {
-      // Prevent elemer from leaving the map while active
+      // Prevent elmer from leaving the map while active
       elmer.constrainPosition(
+        DUNGEON_MIX_X, DUNGEON_MAX_X,
+        DUNGEON_MIN_Y, DUNGEON_MAX_Y,
+      );
+    }
+  });
+  tazFactory.forEach((taz) => {
+    taz.postUpdate(delta);
+    if (taz.isActive()) {
+      // Prevent from leaving map while active
+      taz.constrainPosition(
         DUNGEON_MIX_X, DUNGEON_MAX_X,
         DUNGEON_MIN_Y, DUNGEON_MAX_Y,
       );
@@ -222,6 +259,12 @@ function play(delta: number) {
     elmerFactory.forEach((elmer) => {
       if (elmer.isActive() && chungus.collision(elmer)) {
         elmer.takeDamage(chungus);
+        addScore(1);
+      }
+    });
+    tazFactory.forEach((taz) => {
+      if (taz.isActive() && chungus.collision(taz)) {
+        taz.takeDamage(chungus);
         addScore(1);
       }
     });
