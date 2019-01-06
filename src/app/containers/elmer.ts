@@ -23,7 +23,7 @@ const AIM_LINE_LENGTH = 1000;
 const BASE_FLEE_DIST_SQUARED = 190 ** 2;
 const STRAFE_FACTOR_DURATION_MAX = 300;
 
-const BULLET_SPEED = 20;
+const BULLET_SPEED = 16;
 
 /** Time to spend in Walking state before switching to Attacking (frames) */
 const BASE_TIME_BEFORE_ATTACK = 180;

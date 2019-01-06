@@ -48,7 +48,7 @@ export class Character extends MovingContainer implements IRespawnable {
    * Default behavior: fly away as if pushed by from
    * @param from Character that dealt damage to this character
    */
-  public takeDamage(from?: Character): void {
+  public takeDamage(from?: MovingContainer): void {
     this.body.tint = 0xffeeee;
     if (!!from) {
       this.dx += from.dx + Math.random();

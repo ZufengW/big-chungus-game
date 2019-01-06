@@ -194,6 +194,10 @@ function play(delta: number) {
   bulletFactory.forEach((bullet) => {
     if (!bullet.isInactive()) {
       bullet.postUpdate(delta);
+      // Check for collision with chungus
+      if (chungus.isActive() && bullet.collision(chungus)) {
+        chungus.takeDamage(bullet);
+      }
     }
   });
   elmerFactory.forEach((elmer) => {

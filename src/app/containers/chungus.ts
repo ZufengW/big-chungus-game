@@ -4,6 +4,7 @@ import {
   Graphics, Point, Texture,
 } from '../pixi-alias';
 import { Character } from './character';
+import { MovingContainer } from './moving-container';
 
 const MOVE_SPEED = 4;
 
@@ -13,11 +14,15 @@ const MAX_DASH_CHARGE_TIME = 180;
 const CHARGE_XY_DAMP_FACTOR = 0.96;
 
 const DASH_BODY_ROTATION_FACTOR = 0.01;
+/** amount of time Hurt state lasts for. (Frames) */
+const HURT_DURATION = 30;
+const HURT_MOVE_PENALTY = 0.5;
 
 /** Chungus's active substates */
 enum ActiveState {
   Walking,
   Dashing,
+  Hurt,
 }
 
 export class Chungus extends Character {
@@ -30,6 +35,7 @@ export class Chungus extends Character {
   /** visual indicator of dash charging */
   private dashAim: Graphics;
   private activeState: ActiveState = ActiveState.Walking;
+  private hurtTime = 0;
 
   private getInput: () => [number, number];
 
@@ -70,6 +76,9 @@ export class Chungus extends Character {
         case ActiveState.Dashing:
           // cannot change direction. Invulnerable.
           this.updateDashing(delta);
+          break;
+        case ActiveState.Hurt:
+          this.updateHurt(delta);
         default:
           break;
       }
@@ -80,6 +89,27 @@ export class Chungus extends Character {
         this.body.scale.x = 1;
       }
     }
+  }
+
+  public takeDamage(from?: MovingContainer): void {
+    if (this.activeState === ActiveState.Dashing) {
+      // Chungus is invulnerable while dashing. Attacker bounces.
+      const dxNew = from.dy;
+      const dyNew = -from.dx;
+      from.dx = dxNew;
+      from.dy = dyNew;
+      return;
+    } else if (this.activeState === ActiveState.Hurt) {
+      // Chungus also invulnerable while hurt
+      return;
+    }
+    this.body.tint = 0xff3333;
+    if (!!from) {
+      this.dx += from.dx + Math.random();
+      this.dy += from.dy + Math.random();
+    }
+    this.hurtTime = HURT_DURATION;
+    this.activeState = ActiveState.Hurt;
   }
 
   /**
@@ -96,13 +126,13 @@ export class Chungus extends Character {
   }
 
   /**
-   * Attempt to finish charging dash.
+   * Attempt to finish charging dash, and begin Dashing.
    * Will continue to charge if minimum charge time not achieved yet.
    */
   public stopChargingDash() {
     // Don't do anything if already not charging, or not charged enough
     // or in the middle of dashing
-    if (this.activeState === ActiveState.Dashing
+    if (this.activeState !== ActiveState.Walking
         || !super.isActive()
         || this.dashChargeTime < MIN_DASH_CHARGE_TIME) {
       return;
@@ -134,8 +164,6 @@ export class Chungus extends Character {
   private updateWalking(delta: number): void {
     // Get user input
     const [inX, inY] = this.getInput();
-    // tint differently if hurt
-    this.body.tint = this.isHit ? 0xff0000 : 0xffffff;
 
     // Keep charging dash
     if (this.dashChargeTime > 0) {
@@ -185,6 +213,24 @@ export class Chungus extends Character {
       this.body.rotation = -this.getZ() * DASH_BODY_ROTATION_FACTOR;
     }
 
+  }
+
+  /** Chungus moves slower while hurt and is affected by knockback. */
+  private updateHurt(delta: number): void {
+    // Affected by knockback. Less control.
+    const [inX, inY] = this.getInput();
+    this.dx += inX * HURT_MOVE_PENALTY;
+    this.dy += inY * HURT_MOVE_PENALTY;
+
+    // Damp velocity
+    this.dx *= 0.95;
+    this.dy *= 0.95;
+    this.hurtTime -= delta;
+    if (this.hurtTime <= 0) {
+      // Change back to Walking state.
+      this.activeState = ActiveState.Walking;
+      this.body.tint = 0xffffff;
+    }
   }
 
   /** Reset dash variables */
