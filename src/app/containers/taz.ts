@@ -14,6 +14,7 @@ import { MovingContainer } from './moving-container';
 enum ActiveState {
   Walking,
   Attacking,
+  Hurt,
 }
 
 const SCALE = 0.7;
@@ -22,6 +23,8 @@ const EYES_TRANSITION_SPEED = 0.03;
 const WALKING_AGGRO_RANGE_SQUARED = 9000;
 const WALKING_CALMDOWN_RANGE_SQUARED = 35000;
 const WALK_SPEED = 2;
+/** amount of time Hurt state lasts for. (Frames) */
+const HURT_DURATION = 80;
 
 /** to prevent rapid flipping */
 const DIST_TOO_CLOSE = 10;
@@ -39,11 +42,15 @@ export class Taz extends Character {
   private enemy: MovingContainer;
   /** destination when walking */
   private walkDest: Point = new Point(0, 0);
+  /** time spent in Hurt state */
+  private hurtTime = 0;
 
   /** When aggro, will chase enemey */
   private aggro = false;
   /** Whether or not taz is attacking (i.e. swinging arm) */
   private attacking = true;
+  /** Number of hits taz can survive */
+  private hp = 2;
 
   /**
    * Create a new Taz
@@ -88,11 +95,20 @@ export class Taz extends Character {
     this.eyes.visible = false;
     this.rerollWalkDest();
     this.aggro = false;
+    this.hp = 2;
+    this.body.tint = 0xffffff;
   }
 
   /** Whether or not taz is attacking (and active). */
   public isAttacking(): boolean {
     return this.attacking && super.isActive();
+  }
+
+  /** Whether or not taz is vulnerable to damage.
+   * Use this to save on collision checking.
+   */
+  public isVulnerable(): boolean {
+    return super.isActive() && this.activeState === ActiveState.Walking;
   }
 
   /** Happens once each frame. Update velocity and stuff. */
@@ -106,6 +122,9 @@ export class Taz extends Character {
         case ActiveState.Attacking:
           this.updateAttacking(delta);
           break;
+        case ActiveState.Hurt:
+          this.updateHurt(delta);
+          break;
         default:
           break;
       }
@@ -117,6 +136,26 @@ export class Taz extends Character {
       }
     }
     // this.arm.rotation += 0.5;
+  }
+
+  /**
+   * Should check isVulnerable before doing this.
+   * @param from thing to take damage from.
+   */
+  public takeDamage(from?: MovingContainer): void {
+    this.hp--;
+    if (this.hp <= 0) {
+      super.takeDamage(from);
+      return;
+    }
+    // knockback
+    this.body.tint = 0xff3333;
+    if (!!from) {
+      this.dx += from.dx * 2;
+      this.dy += from.dy * 2;
+    }
+    this.activeState = ActiveState.Hurt;
+    this.hurtTime = HURT_DURATION;
   }
 
   /**
@@ -172,6 +211,19 @@ export class Taz extends Character {
    */
   private updateAttacking(delta: number) {
     // TODO
+  }
+
+  /** When hurt, taz is affected by knockback. */
+  private updateHurt(delta: number): void {
+    // Damp velocity
+    this.dx *= 0.96;
+    this.dy *= 0.96;
+    this.hurtTime -= delta;
+    if (this.hurtTime <= 0) {
+      // Change back to Walking state. Stay slightly red.
+      this.body.tint = 0xffeeee;
+      this.activeState = ActiveState.Walking;
+    }
   }
 
   /**

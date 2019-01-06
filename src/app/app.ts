@@ -277,7 +277,7 @@ function play(delta: number) {
       }
     });
     tazFactory.forEach((taz) => {
-      if (taz.isActive() && chungus.collision(taz)) {
+      if (taz.isVulnerable() && chungus.collision(taz)) {
         taz.takeDamage(chungus);
         addScore(1);
       }
