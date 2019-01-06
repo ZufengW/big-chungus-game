@@ -1,4 +1,5 @@
 import './../styles/app.css';
+import { Bullet } from './containers/bullet';
 import { Chungus } from './containers/chungus';
 import { Elmer } from './containers/elmer';
 import { Factory } from './containers/factory';
@@ -46,6 +47,7 @@ const CHUNGUS_PATH = './assets/big-chungus-smaller.png';
 const ELMER_BODY_PATH = './assets/elmer-body-sm.png';
 const ELMER_ARMS_PATH = './assets/elmer-arms-sm.png';
 const TREASURE_HUNTER_PATH = './assets/treasureHunter.json';
+const BULLET_PATH = './assets/bullet.png';
 
 // Load the assets
 loader
@@ -53,6 +55,7 @@ loader
   .add(ELMER_BODY_PATH)
   .add(ELMER_ARMS_PATH)
   .add(TREASURE_HUNTER_PATH)
+  .add(BULLET_PATH)
   .on('progress', loadProgressHandler)
   .load(setup);
 
@@ -68,6 +71,10 @@ const ELMER_SPAWN_COOLDOWN = 100;
 // Current cooldown between elmer spawns (frames)
 let elmerSpawnCooldown = ELMER_SPAWN_COOLDOWN;
 let elmerFactory: Factory<Elmer>;
+const bulletFactory: Factory<Bullet> = new Factory(
+  () => new Bullet(resources[BULLET_PATH].texture),
+);
+
 let treasure: Treasure;  // treasure chest
 let healthBar: HealthBar;  // player's health bar
 /** mouse position in stage coordinates */
@@ -115,6 +122,21 @@ function setup() {
   treasure.y = app.stage.height / 2 - treasure.height / 2;
   zStage.addChild(treasure);
   treasure.updateZIndex();
+
+  // Set up Elmer
+  Elmer.createBullet = (globalPos) => {
+    const bullet = bulletFactory.spawn();
+    // We want the bullet's body to appear at globalPos.
+    // Given global position of the bullet source,
+    // position the bullet relative to the map.
+    // Add z to y because the bullet's z makes it appear higher.
+    bullet.position.set(
+      globalPos.x - map.x,
+      globalPos.y - map.y + bullet.getZ(),
+    );
+    zStage.addChild(bullet);
+    return bullet;
+  };
 
   // Create an enemy factory
   elmerFactory = new Factory<Elmer>(() => {
@@ -169,6 +191,9 @@ function play(delta: number) {
 
   // postUpdate everything
   chungus.postUpdate(delta);
+  bulletFactory.forEach((bullet) => {
+    bullet.postUpdate(delta);
+  });
   elmerFactory.forEach((elmer) => {
     elmer.postUpdate(delta);
     if (elmer.isActive()) {

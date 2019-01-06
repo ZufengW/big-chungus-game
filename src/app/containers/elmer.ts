@@ -5,6 +5,7 @@ import {
   Sprite,
   Texture,
 } from '../pixi-alias';
+import { Bullet } from './bullet';
 import { Character } from './character';
 import { MovingContainer } from './moving-container';
 
@@ -22,18 +23,24 @@ const AIM_LINE_LENGTH = 1000;
 const BASE_FLEE_DIST_SQUARED = 190 ** 2;
 const STRAFE_FACTOR_DURATION_MAX = 300;
 
+const BULLET_SPEED = 20;
+
 /** Time to spend in Walking state before switching to Attacking (frames) */
-const BASE_TIME_BEFORE_ATTACK = 360;
+const BASE_TIME_BEFORE_ATTACK = 180;
 /** Amount of time to spend firing gun (frames) */
 const FIRE_GUN_TIME = 22;
 
 const HALF_PI = Math.PI / 2;
 
 export class Elmer extends Character {
+  public static createBullet: (globalPos: Point) => Bullet;
   public isHit: boolean = false;
   private arms: Sprite;
   private enemy: MovingContainer;
   private aimLine: Graphics;
+  /** Angle of gun aim with respect to parent. */
+  private aimAngle: number;
+  private aimTargetPos: Point;
   private activeState: ActiveState = ActiveState.Walking;
   /** how much to strafe while walking. From [-2..2]
    * Strafing is perpendicular movement.
@@ -48,7 +55,11 @@ export class Elmer extends Character {
    */
   private attackTimer: number = BASE_TIME_BEFORE_ATTACK;
 
-  constructor(bodyTexture: Texture, armsTexture: Texture, enemy: MovingContainer) {
+  constructor(
+      bodyTexture: Texture,
+      armsTexture: Texture,
+      enemy: MovingContainer,
+    ) {
     super(bodyTexture);
     this.enemy = enemy;
 
@@ -138,6 +149,8 @@ export class Elmer extends Character {
     this.attackTimer -= delta;
     if (this.attackTimer <= 0) {
       // Spent enought time walking. Switch to Attacking state. Init state.
+      this.aimTargetPos = this.enemy.position.clone();
+
       this.activeState = ActiveState.Attacking;
       this.dx = 0;
       this.dy = 0;
@@ -178,8 +191,10 @@ export class Elmer extends Character {
   private aimGun(pos: Point): void {
     // Calculate approximate angle from self position to target position
     const angle = angleBetweenPoints(this.position, pos);
-    const halfAngle = angle / 2;
+    // Record aimAngle for the bullet
+    this.aimAngle = angle;
 
+    const halfAngle = angle / 2;
     // TODO find something less hacky than this
     if (pos.x < this.x) {
       const halfAngleFlipped = halfAngle - HALF_PI;
@@ -211,6 +226,12 @@ export class Elmer extends Character {
       // Gun is charged enough. Init state to fire the gun
       this.attackTimer = FIRE_GUN_TIME;
       this.aimLine.height = 10;
+      // Create the bullet and add velocity
+      const bullet = Elmer.createBullet(this.aimLine.getGlobalPosition());
+      bullet.body.rotation = this.aimAngle;
+      const [dx, dy] = normalise(pointTo(this.position, this.aimTargetPos));
+      bullet.dx = dx * BULLET_SPEED;
+      bullet.dy = dy * BULLET_SPEED;
     } else {
       this.aimLine.alpha = nextAlpha;
     }
