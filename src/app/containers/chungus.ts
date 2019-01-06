@@ -12,6 +12,8 @@ const MIN_DASH_CHARGE_TIME = 60;
 const MAX_DASH_CHARGE_TIME = 180;
 const CHARGE_XY_DAMP_FACTOR = 0.96;
 
+const DASH_BODY_ROTATION_FACTOR = 0.01;
+
 /** Chungus's active substates */
 enum ActiveState {
   Walking,
@@ -173,8 +175,16 @@ export class Chungus extends Character {
     this.dy *= dampFactor;
     // Change back to Walking at end of jump (when on ground again)
     if (this.dx < MOVE_SPEED && this.dy < MOVE_SPEED && this.getZ() === 0) {
+      this.body.rotation = 0;
       this.activeState = ActiveState.Walking;
     }
+    // Change rotation based on height for kicking effect
+    if (this.dx < 0) {
+      this.body.rotation = this.getZ() * DASH_BODY_ROTATION_FACTOR;
+    } else {
+      this.body.rotation = -this.getZ() * DASH_BODY_ROTATION_FACTOR;
+    }
+
   }
 
   /** Reset dash variables */
