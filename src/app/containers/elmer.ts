@@ -22,6 +22,11 @@ const AIM_LINE_LENGTH = 1000;
 const BASE_FLEE_DIST_SQUARED = 190 ** 2;
 const STRAFE_FACTOR_DURATION_MAX = 300;
 
+/** Time to spend in Walking state before switching to Attacking (frames) */
+const BASE_TIME_BEFORE_ATTACK = 360;
+/** Amount of time to spend firing gun (frames) */
+const FIRE_GUN_TIME = 22;
+
 const HALF_PI = Math.PI / 2;
 
 export class Elmer extends Character {
@@ -29,7 +34,7 @@ export class Elmer extends Character {
   private arms: Sprite;
   private enemy: MovingContainer;
   private aimLine: Graphics;
-  private activeState: ActiveState;
+  private activeState: ActiveState = ActiveState.Walking;
   /** how much to strafe while walking. From [-2..2]
    * Strafing is perpendicular movement.
    */
@@ -38,7 +43,12 @@ export class Elmer extends Character {
   private strafeFactorDuration: number = STRAFE_FACTOR_DURATION_MAX;
   private fleeDistSquared: number = 0;
 
-  constructor(bodyTexture: Texture, armsTexture, enemy: MovingContainer) {
+  /** Timer used to keep track of timer before attacking.
+   * And to time the attack itself
+   */
+  private attackTimer: number = BASE_TIME_BEFORE_ATTACK;
+
+  constructor(bodyTexture: Texture, armsTexture: Texture, enemy: MovingContainer) {
     super(bodyTexture);
     this.enemy = enemy;
 
@@ -52,7 +62,7 @@ export class Elmer extends Character {
     // make smaller
     this.setScale(SCALE);
 
-    // line for aiming
+    // Create the line for aiming
     const line = new Graphics();
     line.lineStyle(4, 0xFFFFFF, 1);
     line.moveTo(0, 0);
@@ -61,25 +71,32 @@ export class Elmer extends Character {
     line.y = this.arms.height * SCALED_ARMS_HEIGHT_GUN_RATIO;
     this.arms.addChild(line);
     this.aimLine = line;
-    // line.visible = false;
+    this.aimLine.visible = false;
+
     this.rerollStrafeFactor();
+    this.rerollTimeBeforeAttack();
   }
 
+  /** Use this to reset elmer's state in preparation for respawning */
   public init() {
     super.init();
     this.activeState = ActiveState.Walking;
-    // this.aimLine.visible = false;  // undef?
+    this.aimLine.visible = false;
+    this.aimLine.tint = 0xffffff;
     this.rerollStrafeFactor();
+    this.rerollTimeBeforeAttack();
   }
 
   /** Happens once each frame. Update velocity and stuff. */
   public update(delta: number): void {
     super.update(delta);
 
-    // TODO: walk / aim / shoot when Active
     if (super.isActive()) {
       if (this.activeState === ActiveState.Walking) {
+        // Walk and aim when Active
         this.updateWalking(delta);
+      } else {
+        this.updateAttacking(delta);
       }
     }
   }
@@ -118,6 +135,31 @@ export class Elmer extends Character {
     }
 
     this.aimGun(this.enemy.position);
+    this.attackTimer -= delta;
+    if (this.attackTimer <= 0) {
+      // Spent enought time walking. Switch to Attacking state. Init state.
+      this.activeState = ActiveState.Attacking;
+      this.dx = 0;
+      this.dy = 0;
+      this.aimLine.alpha = 0;
+      this.aimLine.tint = 0xffffff;
+      this.aimLine.height = 4;
+      this.aimLine.visible = true;
+      return;
+    }
+  }
+
+  /**
+   * Elmer telegraphs the attack by charging, then fires.
+   * @param delta frame time
+   */
+  private updateAttacking(delta: number) {
+    if (this.aimLine.alpha < 1) {
+      this.chargeGun(delta);
+      return;
+    }
+    // Gun is charged. Fire.
+    this.fireGun(delta);
   }
 
   /** Roll a new StrafeFactor and fleeDistSquared
@@ -161,14 +203,41 @@ export class Elmer extends Character {
     }
   }
 
+  /** charges the attack by increasing alpha of the aim line */
   private chargeGun(delta: number) {
     const nextAlpha = this.aimLine.alpha + (delta / 100);
     if (nextAlpha > 1) {
       this.aimLine.alpha = 1;
-      // TODO: fire gun
-      this.aimLine.tint = 0xFFFF00;
+      // Gun is charged enough. Init state to fire the gun
+      this.attackTimer = FIRE_GUN_TIME;
+      this.aimLine.height = 10;
     } else {
       this.aimLine.alpha = nextAlpha;
     }
+  }
+
+  /** gun firing flashing animation */
+  private fireGun(delta: number) {
+    this.attackTimer -= delta;
+    if (this.attackTimer > 17) {
+      this.aimLine.visible = false;
+    } else if (this.attackTimer > 14) {
+      this.aimLine.visible = true;
+    } else if (this.attackTimer > 7) {
+      this.aimLine.visible = false;
+    } else if (this.attackTimer > 0) {
+      this.aimLine.tint = 0xFFFF00;
+      this.aimLine.visible = true;
+    } else {
+      // Finished attacking. Switch back to Walking state.
+      this.activeState = ActiveState.Walking;
+      this.rerollTimeBeforeAttack();
+      this.aimLine.visible = false;
+    }
+  }
+
+  /** reset the time to spend Walking before switching to Attacking */
+  private rerollTimeBeforeAttack() {
+    this.attackTimer = BASE_TIME_BEFORE_ATTACK + (Math.random() * 500);
   }
 }

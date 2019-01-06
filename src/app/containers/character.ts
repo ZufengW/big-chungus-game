@@ -24,7 +24,9 @@ export class Character extends MovingContainer implements IRespawnable {
 
   constructor(texture: Texture) {
     super(texture);
-    this.init();
+    // start in the sky
+    this.setZ(STARTING_ELEVATION);
+    this.dz = -1;
   }
 
   public update(delta: number) {
