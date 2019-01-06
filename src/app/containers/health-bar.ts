@@ -3,13 +3,14 @@ import {
   Graphics,
 } from '../pixi-alias';
 
+/** width of the inner part of the bar */
 const BAR_WIDTH = 128;
 
 export class HealthBar extends Container {
-  public outer: Graphics;
-  public maxHealth: number;
+  private outer: Graphics;
+  private maxHealth: number;
   /** Current health */
-  public health: number;
+  private health: number;
 
   constructor(maxHealth: number) {
     super();
@@ -17,10 +18,10 @@ export class HealthBar extends Container {
     this.maxHealth = maxHealth;
     this.health = maxHealth;
 
-    // Create the black background rectangle
+    // Create the background rectangle
     const innerBar = new Graphics();
-    innerBar.beginFill(0x000000);
-    innerBar.drawRect(0, 0, BAR_WIDTH, 8);
+    innerBar.beginFill(0xffffff);
+    innerBar.drawRect(-2, -2, BAR_WIDTH + 4, 12);
     innerBar.endFill();
     this.addChild(innerBar);
 
@@ -43,5 +44,9 @@ export class HealthBar extends Container {
     // Update the appearance of the bar. Don't allow going negative
     const convertedHealth = this.health > 0 ? this.health : 0;
     this.outer.width = (convertedHealth / this.maxHealth) * BAR_WIDTH;
+  }
+
+  public getHealth(): number {
+    return this.health;
   }
 }

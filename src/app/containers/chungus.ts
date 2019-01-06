@@ -4,6 +4,7 @@ import {
   Graphics, Point, Texture,
 } from '../pixi-alias';
 import { Character } from './character';
+import { HealthBar } from './health-bar';
 import { MovingContainer } from './moving-container';
 
 const MOVE_SPEED = 4;
@@ -38,14 +39,14 @@ export class Chungus extends Character {
   private activeState: ActiveState = ActiveState.Walking;
   /** time spent in Hurt state */
   private hurtTime = 0;
-  private hp = 5;
+  private healthBar: HealthBar;
   /** For the waddle animation. */
   private waddleState = 0;
   private waddleDirection = 1;
 
   private getInput: () => [number, number];
 
-  constructor(texture: Texture) {
+  constructor(texture: Texture, healthBar: HealthBar) {
     super(texture);
 
     // make smaller
@@ -54,6 +55,7 @@ export class Chungus extends Character {
     // TODO: revise use of setup functions here. Maybe move out
     this.getInput = setupMoveKeys();
 
+    this.healthBar = healthBar;
     // line for aiming the dash
     const triangle = new Graphics();
     triangle.beginFill(0xFFFFFF);
@@ -110,6 +112,10 @@ export class Chungus extends Character {
    * @param from thing to take damage from.
    */
   public takeDamage(from?: MovingContainer): void {
+    this.healthBar.addHealth(-1);
+    if (this.healthBar.getHealth() <= 0) {
+      super.takeDamage(from);
+    }
     this.body.tint = 0xff3333;
     if (!!from) {
       this.dx += from.dx + Math.random();

@@ -75,7 +75,7 @@ function loadProgressHandler(load, resource) {
 let gameState: (delta: number) => void;
 let chungus: Chungus;  // the player
 /** Limit to number of instances */
-const ENEMY_POPULATION_LIMIT = 70;
+const ENEMY_POPULATION_LIMIT = 50;
 /** to disallow enemies from spawning too close to chungus */
 const MIN_SPAWN_DISTANCE_SQUARED = 210 ** 2;
 
@@ -101,7 +101,6 @@ const bulletFactory: Factory<Bullet> = new Factory(
 );
 
 let treasure: Treasure;  // treasure chest
-let healthBar: HealthBar;  // player's health bar
 /** mouse position in stage coordinates */
 let stageMousePos: Point = new Point(0, 0);
 /** The map within the stage */
@@ -140,8 +139,10 @@ function setup() {
   scoreText = initScoreText(APP_WIDTH_HALF, 60);
   app.stage.addChild(scoreText);
 
-  // Create the player
-  chungus = new Chungus(resources[CHUNGUS_PATH].texture);
+  // Create the health bar and the player
+  const healthBar = new HealthBar(5);
+  healthBar.position.set(100, 30);
+  chungus = new Chungus(resources[CHUNGUS_PATH].texture, healthBar);
   chungus.position.set(100, app.stage.height / 2);
   zStage.addChild(chungus);
 
@@ -176,10 +177,8 @@ function setup() {
     );
   }, ENEMY_POPULATION_LIMIT);
 
-  // Create the health bar
-  healthBar = new HealthBar(40);
-  healthBar.position.set(app.stage.width - 170, 4);
-  app.stage.addChild(healthBar);  // TODO: replace with gameScene.addChild
+  // Add healthBar to stage later so it is drawn on top
+  app.stage.addChild(healthBar);
 
   // Start the game loop by adding the `gameLoop` function to
   // Pixi's `ticker` and providing it with a `delta` argument.
