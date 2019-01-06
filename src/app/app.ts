@@ -51,6 +51,7 @@ const TREASURE_HUNTER_PATH = './assets/treasureHunter.json';
 const BULLET_PATH = './assets/bullet.png';
 const TAZ_BODY_PATH = './assets/taz-body-sm.png';
 const TAZ_ARM_PATH = './assets/taz-arm-sm.png';
+const TAZ_EYES_RED_PATH = './assets/taz-eyes-red-sm.png';
 
 // Load the assets
 loader
@@ -60,6 +61,7 @@ loader
   .add(TREASURE_HUNTER_PATH)
   .add(TAZ_BODY_PATH)
   .add(TAZ_ARM_PATH)
+  .add(TAZ_EYES_RED_PATH)
   .add(BULLET_PATH)
   .on('progress', loadProgressHandler)
   .load(setup);
@@ -87,6 +89,7 @@ const tazFactory: Factory<Taz> = new Factory(
   () => new Taz(
     resources[TAZ_BODY_PATH].texture,
     resources[TAZ_ARM_PATH].texture,
+    resources[TAZ_EYES_RED_PATH].texture,
     chungus,
   ),
   ENEMY_POPULATION_LIMIT,

@@ -1,6 +1,8 @@
-import { angleBetweenPoints, lengthSquared, normalise, pointTo, randRange } from '../helpers';
 import {
-  Graphics,
+  distanceSquared, lengthSquared,
+  normalise, pointTo, randRange,
+} from '../helpers';
+import {
   Point,
   Sprite,
   Texture,
@@ -18,6 +20,9 @@ const SCALE = 0.7;
 
 const WALK_SPEED = 2;
 
+/** to prevent rapid flipping */
+const DIST_TOO_CLOSE = 10;
+
 export class Taz extends Character {
   /** Walking boundaries. They need to be set up somewhere. */
   public static minX: number;
@@ -26,6 +31,7 @@ export class Taz extends Character {
   public static maxY: number;
   /** current Active substate */
   private activeState: ActiveState = ActiveState.Walking;
+  private eyes: Sprite;
   private arm: Sprite;
   private enemy: MovingContainer;
   /** destination when walking */
@@ -35,15 +41,25 @@ export class Taz extends Character {
    * Create a new Taz
    * @param bodyTexture texture for body
    * @param armTexture texture for arm
+   * @param eyesRedTexture texture for red eyes
    * @param enemy enemy of taz
    */
   constructor(
     bodyTexture: Texture,
     armTexture: Texture,
+    eyesRedTexture: Texture,
     enemy: MovingContainer,
   ) {
   super(bodyTexture);
   this.enemy = enemy;
+
+  // set up eyes
+  const eyes = new Sprite(eyesRedTexture);
+  eyes.pivot.set(38, 19);
+  eyes.position.set(-12, -24);
+  eyes.visible = false;
+  this.body.addChild(eyes);
+  this.eyes = eyes;
 
   // set up Arm
   const arm = new Sprite(armTexture);
@@ -61,6 +77,7 @@ export class Taz extends Character {
   public init() {
     super.init();
     this.activeState = ActiveState.Walking;
+    this.eyes.visible = false;
     this.rerollWalkDest();
   }
 
@@ -85,6 +102,7 @@ export class Taz extends Character {
         this.body.scale.x = -1;
       }
     }
+    // this.arm.rotation += 0.5;
   }
 
   /**
@@ -92,11 +110,29 @@ export class Taz extends Character {
    * @param delta frame time
    */
   private updateWalking(delta: number) {
-    const [x, y] = pointTo(this.position, this.walkDest);
+    // if enemy is close, charge an attack and move towards enemy.
+    let [x, y] = pointTo(this.position, this.enemy.position);
+    const squaredDistToEnemy = lengthSquared([x, y]);
+    if (squaredDistToEnemy < 4000) {
+      this.eyes.visible = true;
+      if (this.chargeAttack(delta)) {
+        // TODO: launch the attack
+      }
+      if (squaredDistToEnemy < DIST_TOO_CLOSE) {
+        // Don't need to move any closer to enemy. Halt.
+        this.dx = 0;
+        this.dy = 0;
+        return;
+      }
+    } else {
+      // Otherwise move towards destination.
+      [x, y] = pointTo(this.position, this.walkDest);
+    }
     // If close to destination, reroll destination
-    if (lengthSquared([x, y]) < 10) {
+    if (lengthSquared([x, y]) < DIST_TOO_CLOSE) {
       this.rerollWalkDest();
     }
+    // Move towards destination
     const [dx, dy] = normalise([x, y]);
     this.dx = dx * WALK_SPEED;
     this.dy = dy * WALK_SPEED;
@@ -108,6 +144,21 @@ export class Taz extends Character {
    */
   private updateAttacking(delta: number) {
     // TODO
+  }
+
+  /**
+   *
+   * @param delta frame time
+   * @return whether or not attack has charged yet
+   */
+  private chargeAttack(delta: number): boolean {
+    const nextAlpha = this.eyes.alpha + delta * 0.01;
+    if (nextAlpha >= 1) {
+      this.eyes.alpha = 1;
+      return true;
+    }
+    this.eyes.alpha = nextAlpha;
+    return false;
   }
 
   private rerollWalkDest() {
