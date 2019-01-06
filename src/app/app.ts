@@ -6,7 +6,7 @@ import { Factory } from './containers/factory';
 import { HealthBar } from './containers/health-bar';
 import { Taz } from './containers/taz';
 import { Treasure } from './containers/treasure';
-import { randRange } from './helpers';
+import { randPosAwayFrom, randRange } from './helpers';
 import {
   Application,
   Container,
@@ -74,15 +74,17 @@ function loadProgressHandler(load, resource) {
 // Things used in the game
 let gameState: (delta: number) => void;
 let chungus: Chungus;  // the player
-// Limit to number of instances
+/** Limit to number of instances */
 const ENEMY_POPULATION_LIMIT = 70;
+/** to disallow enemies from spawning too close to chungus */
+const MIN_SPAWN_DISTANCE_SQUARED = 200 ** 2;
 
-const ELMER_SPAWN_COOLDOWN = 10000;
+const ELMER_SPAWN_COOLDOWN = 200;
 // Current cooldown between elmer spawns (frames)
 let elmerSpawnCooldown = ELMER_SPAWN_COOLDOWN;
 let elmerFactory: Factory<Elmer>;
 
-const TAZ_SPAWN_COOLDOWN = 100;
+const TAZ_SPAWN_COOLDOWN = 200;
 // Current cooldown between taz spawns (frames)
 let tazSpawnCooldown = TAZ_SPAWN_COOLDOWN;
 const tazFactory: Factory<Taz> = new Factory(
@@ -173,10 +175,6 @@ function setup() {
       chungus,
     );
   }, ENEMY_POPULATION_LIMIT);
-  // Spawn an enemy
-  const elmer = elmerFactory.spawn();
-  zStage.addChild(elmer);
-  elmer.position.set(200, 300);
 
   // Create the health bar
   healthBar = new HealthBar(40);
@@ -206,7 +204,10 @@ function play(delta: number) {
     const elmer = elmerFactory.spawn();
     if (elmer) {
       zStage.addChild(elmer);
-      elmer.position.set(randRange(100, 400), randRange(100, 400));
+      const [x, y] = randPosAwayFrom(
+        100, 400, chungus.position, MIN_SPAWN_DISTANCE_SQUARED,
+      );
+      elmer.position.set(x, y);
     }
   }
   tazSpawnCooldown -= delta;
@@ -215,7 +216,10 @@ function play(delta: number) {
     const taz = tazFactory.spawn();
     if (taz) {
       zStage.addChild(taz);
-      taz.position.set(randRange(100, 400), randRange(100, 400));
+      const [x, y] = randPosAwayFrom(
+        100, 400, chungus.position, MIN_SPAWN_DISTANCE_SQUARED,
+      );
+      taz.position.set(x, y);
     }
   }
 

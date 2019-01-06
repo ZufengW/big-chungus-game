@@ -1,10 +1,39 @@
 import { Point } from './pixi-alias';
 /**
- * Helper functions
+ * Module containing Helper functions
  */
+
+const MAX_TRIES = 50;
 
 export function randRange(min: number, max: number): number {
   return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+/**
+ *
+ * @param min minimum x and y value
+ * @param max maximum x and y value
+ * @param avoid Point to avoid
+ * @param distanceSquaredToAvoid distance squared away from point to avoid
+ * @return random coordinates away from point to avoid
+ */
+export function randPosAwayFrom(
+    min: number, max: number,
+    avoid: Point, distanceSquaredToAvoid: number,
+  ): [number, number] {
+  let x = randRange(min, max);
+  let y = randRange(min, max);
+  let tries = 0;
+  while (lengthSquared([x - avoid.x, y - avoid.y]) < distanceSquaredToAvoid) {
+    x = randRange(min, max);
+    y = randRange(min, max);
+    tries++;
+    if (tries > MAX_TRIES) {
+      // This is bad. Don't get into this situation.
+      break;
+    }
+  }
+  return [x, y];
 }
 
 /**
