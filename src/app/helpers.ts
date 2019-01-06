@@ -5,6 +5,7 @@ import { Point } from './pixi-alias';
 
 const MAX_TRIES = 50;
 
+/** @return random integer in range [min, max] */
 export function randRange(min: number, max: number): number {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
@@ -21,12 +22,33 @@ export function randPosAwayFrom(
     min: number, max: number,
     avoid: Point, distanceSquaredToAvoid: number,
   ): [number, number] {
-  let x = randRange(min, max);
-  let y = randRange(min, max);
+  let side: number;
+  let x: number = randRange(min, max);
+  let y: number = randRange(min, max);
   let tries = 0;
   while (lengthSquared([x - avoid.x, y - avoid.y]) < distanceSquaredToAvoid) {
-    x = randRange(min, max);
-    y = randRange(min, max);
+    // Fallback to only trying the extremes
+    side = randRange(1, 4);
+    switch (side) {
+      case 1:  // top
+        x = randRange(min, max);
+        y = min;
+        break;
+      case 2:  // right
+        x = max;
+        y = randRange(min, max);
+        break;
+      case 3:  // bottom
+        x = randRange(min, max);
+        y = max;
+        break;
+      case 4:  // left
+        x = min;
+        y = randRange(min, max);
+        break;
+      default:
+        return [min, min];  // Should not happen
+    }
     tries++;
     if (tries > MAX_TRIES) {
       // This is bad. Don't get into this situation.

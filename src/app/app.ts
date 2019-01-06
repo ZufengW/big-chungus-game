@@ -77,7 +77,7 @@ let chungus: Chungus;  // the player
 /** Limit to number of instances */
 const ENEMY_POPULATION_LIMIT = 70;
 /** to disallow enemies from spawning too close to chungus */
-const MIN_SPAWN_DISTANCE_SQUARED = 200 ** 2;
+const MIN_SPAWN_DISTANCE_SQUARED = 210 ** 2;
 
 const ELMER_SPAWN_COOLDOWN = 200;
 // Current cooldown between elmer spawns (frames)
