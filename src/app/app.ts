@@ -192,7 +192,9 @@ function play(delta: number) {
   // postUpdate everything
   chungus.postUpdate(delta);
   bulletFactory.forEach((bullet) => {
-    bullet.postUpdate(delta);
+    if (!bullet.isInactive()) {
+      bullet.postUpdate(delta);
+    }
   });
   elmerFactory.forEach((elmer) => {
     elmer.postUpdate(delta);

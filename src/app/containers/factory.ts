@@ -1,4 +1,9 @@
 
+/**
+ * Things that implement IRespawnable need to have a way
+ * to check if it's inactive,
+ * and a way to initialise (respawn) it.
+ */
 export interface IRespawnable {
   init(): void;
   isInactive(): boolean;
@@ -10,6 +15,7 @@ export interface IRespawnable {
 export class Factory<T extends IRespawnable> {
   private instances: T[] = [];
   private createNewCharacter: () => T;
+  /** Cap on maximum number of instances stored. 0 means no limit. */
   private cap: number = 0;
 
   /**
@@ -51,5 +57,10 @@ export class Factory<T extends IRespawnable> {
     for (const c of this.instances) {
       callback(c);
     }
+  }
+
+  /** @return total number of instances, including inactive. */
+  public numInstances(): number {
+    return this.instances.length;
   }
 }
