@@ -18,6 +18,9 @@ enum ActiveState {
 
 const SCALE = 0.7;
 
+const EYES_TRANSITION_SPEED = 0.05;
+const WALKING_AGGRO_RANGE_SQUARED = 9000;
+const WALKING_CALMDOWN_RANGE_SQUARED = 35000;
 const WALK_SPEED = 2;
 
 /** to prevent rapid flipping */
@@ -36,6 +39,9 @@ export class Taz extends Character {
   private enemy: MovingContainer;
   /** destination when walking */
   private walkDest: Point = new Point(0, 0);
+
+  /** When aggro, will chase enemey */
+  private aggro = false;
 
   /**
    * Create a new Taz
@@ -79,6 +85,12 @@ export class Taz extends Character {
     this.activeState = ActiveState.Walking;
     this.eyes.visible = false;
     this.rerollWalkDest();
+    this.aggro = false;
+  }
+
+  /** Whether or not taz is attacking */
+  public isAttacking(): boolean {
+    return this.aggro;
   }
 
   /** Happens once each frame. Update velocity and stuff. */
@@ -113,10 +125,20 @@ export class Taz extends Character {
     // if enemy is close, charge an attack and move towards enemy.
     let [x, y] = pointTo(this.position, this.enemy.position);
     const squaredDistToEnemy = lengthSquared([x, y]);
-    if (squaredDistToEnemy < 4000) {
-      this.eyes.visible = true;
+    if (squaredDistToEnemy < WALKING_AGGRO_RANGE_SQUARED || this.aggro) {
+      if (this.aggro) {
+        if (squaredDistToEnemy > WALKING_CALMDOWN_RANGE_SQUARED) {
+          this.aggro = false;
+        }
+      } else {
+        // Not yet aggro. Transition.
+        this.aggro = true;
+        this.eyes.visible = true;
+        this.eyes.alpha = 0;
+      }
       if (this.chargeAttack(delta)) {
         // TODO: launch the attack
+        this.arm.rotation -= 0.5 * delta;
       }
       if (squaredDistToEnemy < DIST_TOO_CLOSE) {
         // Don't need to move any closer to enemy. Halt.
@@ -124,8 +146,10 @@ export class Taz extends Character {
         this.dy = 0;
         return;
       }
+
     } else {
       // Otherwise move towards destination.
+      this.eyes.alpha -= delta * EYES_TRANSITION_SPEED;
       [x, y] = pointTo(this.position, this.walkDest);
     }
     // If close to destination, reroll destination
@@ -152,7 +176,7 @@ export class Taz extends Character {
    * @return whether or not attack has charged yet
    */
   private chargeAttack(delta: number): boolean {
-    const nextAlpha = this.eyes.alpha + delta * 0.01;
+    const nextAlpha = this.eyes.alpha + delta * EYES_TRANSITION_SPEED;
     if (nextAlpha >= 1) {
       this.eyes.alpha = 1;
       return true;
