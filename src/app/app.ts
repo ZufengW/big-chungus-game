@@ -264,7 +264,7 @@ function play(delta: number) {
     DUNGEON_MIN_Y, DUNGEON_MAX_Y,
   );
 
-  chungus.isHit = false;  // reset
+  // chungus can damage enemies when dashing
   if (chungus.isDashing()) {
     elmerFactory.forEach((elmer) => {
       if (elmer.isActive() && chungus.collision(elmer)) {
@@ -276,6 +276,13 @@ function play(delta: number) {
       if (taz.isActive() && chungus.collision(taz)) {
         taz.takeDamage(chungus);
         addScore(1);
+      }
+    });
+  } else {
+    // taz can damage chungus
+    tazFactory.forEach((taz) => {
+      if (taz.isAttacking() && chungus.collision(taz)) {
+        chungus.takeDamage(taz);
       }
     });
   }

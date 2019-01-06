@@ -18,7 +18,7 @@ enum ActiveState {
 
 const SCALE = 0.7;
 
-const EYES_TRANSITION_SPEED = 0.05;
+const EYES_TRANSITION_SPEED = 0.03;
 const WALKING_AGGRO_RANGE_SQUARED = 9000;
 const WALKING_CALMDOWN_RANGE_SQUARED = 35000;
 const WALK_SPEED = 2;
@@ -42,6 +42,8 @@ export class Taz extends Character {
 
   /** When aggro, will chase enemey */
   private aggro = false;
+  /** Whether or not taz is attacking (i.e. swinging arm) */
+  private attacking = true;
 
   /**
    * Create a new Taz
@@ -88,9 +90,9 @@ export class Taz extends Character {
     this.aggro = false;
   }
 
-  /** Whether or not taz is attacking */
+  /** Whether or not taz is attacking (and active). */
   public isAttacking(): boolean {
-    return this.aggro;
+    return this.attacking && super.isActive();
   }
 
   /** Happens once each frame. Update velocity and stuff. */
@@ -136,8 +138,10 @@ export class Taz extends Character {
         this.eyes.visible = true;
         this.eyes.alpha = 0;
       }
-      if (this.chargeAttack(delta)) {
-        // TODO: launch the attack
+      this.attacking = this.chargeAttack(delta);
+      if (this.attacking) {
+        // Actually attack.
+        this.attacking = true;
         this.arm.rotation -= 0.5 * delta;
       }
       if (squaredDistToEnemy < DIST_TOO_CLOSE) {

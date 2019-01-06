@@ -28,8 +28,6 @@ enum ActiveState {
 }
 
 export class Chungus extends Character {
-  public isHit: boolean = false;
-
   /** Destination of dash in local coordinates */
   public dashDest: Point = new Point(0, 0);
   /** Also represents whether or not charging a dash */
