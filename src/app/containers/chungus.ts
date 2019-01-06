@@ -7,6 +7,8 @@ import { Character } from './character';
 import { MovingContainer } from './moving-container';
 
 const MOVE_SPEED = 4;
+/** How much chungus waddles */
+const WADDLE_AMOUNT = 0.07;
 
 // times are in frames
 const MIN_DASH_CHARGE_TIME = 60;
@@ -34,8 +36,13 @@ export class Chungus extends Character {
   private dashChargeTime: number = 0;
   /** visual indicator of dash charging */
   private dashAim: Graphics;
+  /** current Active substate */
   private activeState: ActiveState = ActiveState.Walking;
+  /** time spent in Hurt state */
   private hurtTime = 0;
+  /** For the waddle animation. */
+  private waddleState = 0;
+  private waddleDirection = 1;
 
   private getInput: () => [number, number];
 
@@ -193,6 +200,9 @@ export class Chungus extends Character {
     // Update player's velocity
     this.dx = inX * MOVE_SPEED;
     this.dy = inY * MOVE_SPEED;
+
+    // Update waddle
+    this.updateWaddle();
   }
 
   /** update during Dashing state */
@@ -230,6 +240,21 @@ export class Chungus extends Character {
       // Change back to Walking state.
       this.activeState = ActiveState.Walking;
       this.body.tint = 0xffffff;
+      this.waddleState = 0;
+    }
+    this.updateWaddle();
+  }
+
+  /** Waddle animation */
+  private updateWaddle() {
+    if (this.dx !== 0 || this.dy !== 0) {
+      this.body.rotation = this.waddleState;
+      if (this.waddleState <= -WADDLE_AMOUNT && this.waddleDirection === -1) {
+        this.waddleDirection = 1;
+      } else if (this.waddleState >= WADDLE_AMOUNT && this.waddleDirection === 1) {
+        this.waddleDirection = -1;
+      }
+      this.waddleState += 0.01 * this.waddleDirection;
     }
   }
 
