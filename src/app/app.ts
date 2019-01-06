@@ -113,6 +113,13 @@ const DUNGEON_MAX_X = 512 - 32;
 const DUNGEON_MIN_Y = 32;
 const DUNGEON_MAX_Y = 480;
 
+const MAP_BOUNDARY_BUFFER = 50;
+// Set up Taz walking boundaries
+Taz.minX = DUNGEON_MIX_X + MAP_BOUNDARY_BUFFER;
+Taz.minY = DUNGEON_MIN_Y + MAP_BOUNDARY_BUFFER;
+Taz.maxX = DUNGEON_MAX_X - MAP_BOUNDARY_BUFFER;
+Taz.maxY = DUNGEON_MAX_Y - MAP_BOUNDARY_BUFFER;
+
 function setup() {
   // clear the loadingP
   loadingP.textContent = '';

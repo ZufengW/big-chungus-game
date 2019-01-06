@@ -28,6 +28,14 @@ export function distanceSquared(p1: Point, p2: Point) {
 }
 
 /**
+ * @param param0 coordinates
+ * @return squared length of pair
+ */
+export function lengthSquared([x, y]: [number, number]): number {
+  return (x ** 2) + (y ** 2);
+}
+
+/**
  * [x, y] pair from p1 to p2
  * @param p1 start point
  * @param p2 end point
