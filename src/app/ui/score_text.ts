@@ -1,7 +1,7 @@
 import {
   Text,
   TextStyle,
-} from '../pixi-alias';
+} from '../pixi_alias';
 
 /** this ui component has state... */
 let score: number = 0;

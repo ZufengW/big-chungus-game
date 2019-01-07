@@ -6,9 +6,9 @@ import {
   Point,
   Sprite,
   Texture,
-} from '../pixi-alias';
+} from '../pixi_alias';
 import { Character } from './character';
-import { MovingContainer } from './moving-container';
+import { MovingContainer } from './moving_container';
 
 /** Taz's Active substates */
 enum ActiveState {

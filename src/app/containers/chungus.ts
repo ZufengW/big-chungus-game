@@ -2,10 +2,10 @@ import { angleBetweenPoints, normalise, rgb } from '../helpers';
 import { setupMoveKeys } from '../input';
 import {
   Graphics, Point, Texture,
-} from '../pixi-alias';
+} from '../pixi_alias';
 import { Character } from './character';
-import { HealthBar } from './health-bar';
-import { MovingContainer } from './moving-container';
+import { HealthBar } from './health_bar';
+import { MovingContainer } from './moving_container';
 
 const MOVE_SPEED = 4;
 /** How much chungus waddles */

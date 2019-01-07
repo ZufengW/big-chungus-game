@@ -4,10 +4,10 @@ import {
   Point,
   Sprite,
   Texture,
-} from '../pixi-alias';
+} from '../pixi_alias';
 import { Bullet } from './bullet';
 import { Character } from './character';
-import { MovingContainer } from './moving-container';
+import { MovingContainer } from './moving_container';
 
 /** Elmer's Active substates */
 enum ActiveState {

@@ -1,4 +1,4 @@
-import { Point } from './pixi-alias';
+import { Point } from './pixi_alias';
 /**
  * Module containing Helper functions
  */

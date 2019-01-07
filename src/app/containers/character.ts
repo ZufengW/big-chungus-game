@@ -1,8 +1,8 @@
 import {
   Texture,
-} from '../pixi-alias';
+} from '../pixi_alias';
 import { IRespawnable } from './factory';
-import { MovingContainer } from './moving-container';
+import { MovingContainer } from './moving_container';
 
 /** Character states */
 export enum State {

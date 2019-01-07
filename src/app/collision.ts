@@ -1,4 +1,4 @@
-import { Container, Rectangle } from './pixi-alias';
+import { Container, Rectangle } from './pixi_alias';
 
 /**
  * Functions for collision detection

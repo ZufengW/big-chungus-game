@@ -1,7 +1,7 @@
 import {
   Texture,
-} from '../pixi-alias';
-import { MovingContainer } from './moving-container';
+} from '../pixi_alias';
+import { MovingContainer } from './moving_container';
 
 export class Treasure extends MovingContainer {
   public holder: MovingContainer = null;

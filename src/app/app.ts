@@ -3,7 +3,7 @@ import { Bullet } from './containers/bullet';
 import { Chungus } from './containers/chungus';
 import { Elmer } from './containers/elmer';
 import { Factory } from './containers/factory';
-import { HealthBar } from './containers/health-bar';
+import { HealthBar } from './containers/health_bar';
 import { Taz } from './containers/taz';
 import { Treasure } from './containers/treasure';
 import { randPosAwayFrom, randRange } from './helpers';
@@ -17,7 +17,7 @@ import {
   Text,
   utils,
   ZContainer,
-} from './pixi-alias';
+} from './pixi_alias';
 import { addScore, initScoreText, updateScoreText } from './ui/score_text';
 
 let type: string = 'WebGL';

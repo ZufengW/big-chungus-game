@@ -1,4 +1,4 @@
-import { Graphics, Sprite, Texture, ZContainer } from '../pixi-alias';
+import { Graphics, Sprite, Texture, ZContainer } from '../pixi_alias';
 
 /**
  * Has velocity and update. And shadow and z (elevation)

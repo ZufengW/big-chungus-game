@@ -1,7 +1,7 @@
 import {
   Container,
   Graphics,
-} from '../pixi-alias';
+} from '../pixi_alias';
 
 /** width of the inner part of the bar */
 const BAR_WIDTH = 128;
