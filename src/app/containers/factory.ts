@@ -14,7 +14,7 @@ export interface IRespawnable {
  */
 export class Factory<T extends IRespawnable> {
   private instances: T[] = [];
-  private createNewCharacter: () => T;
+  private createNewInstance: () => T;
   /** Cap on maximum number of instances stored. 0 means no limit. */
   private cap: number = 0;
 
@@ -24,13 +24,16 @@ export class Factory<T extends IRespawnable> {
    * @param cap limit on how many instances in the list
    */
   constructor(createNewCharacter: () => T, cap?: number) {
-    this.createNewCharacter = createNewCharacter;
+    this.createNewInstance = createNewCharacter;
     if (cap) {
       this.cap = cap;
     }
   }
 
-  /** allocates an instance into Entering State */
+  /** initialises an instance
+   * @param num number of instances to spawn
+   * @return an instance, or null if none available.
+   */
   public spawn(): T {
     // look for the first available inactive instance
     for (const c of this.instances) {
@@ -44,9 +47,40 @@ export class Factory<T extends IRespawnable> {
       // Reached the limit of instances. Cannot create.
       return null;
     }
-    const newCharacter = this.createNewCharacter();
-    this.instances.push(newCharacter);
-    return newCharacter;
+    const newInstance = this.createNewInstance();
+    this.instances.push(newInstance);
+    return newInstance;
+  }
+
+  /** initialises up to a specified number of instances.
+   * @param num number of instances to spawn
+   * @return list of instances spawned
+   */
+  public spawnMultiple(num: number): T[] {
+    let numRemaining = num;
+    const spawned: T[] = [];
+    for (const c of this.instances) {
+      if (numRemaining > 0) {
+        if (c.isInactive()) {
+          c.init();
+          spawned.push(c);
+          numRemaining--;
+        }
+      } else {
+        // finished spawning num instances
+        return spawned;
+      }
+    }
+    // No available inactive instances. Create new ones.
+    if (this.cap) {
+      numRemaining = Math.min(numRemaining, this.cap - this.instances.length);
+    }
+    for (; numRemaining > 0; numRemaining--) {
+      const newInstance = this.createNewInstance();
+      this.instances.push(newInstance);
+      spawned.push(newInstance);
+    }
+    return spawned;
   }
 
   /**

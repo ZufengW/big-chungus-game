@@ -3,7 +3,7 @@ import {
   TextStyle,
 } from '../pixi_alias';
 
-/** this ui component has state... */
+/** this ui component has state. Alternative to using a class */
 let score: number = 0;
 let scoreText: Text;
 
@@ -54,9 +54,20 @@ export function addScore(n: number) {
 export function updateScoreText(delta: number) {
   bonusSizeShrinkDelay -= delta;
   if (bonusSizeShrinkDelay <= 0) {
-    // Shrink
-    bonusSize = Math.max(0, bonusSize - (delta / 60));
+    // Bonus size shrinks
+    bonusSize = Math.max(0, bonusSize - (delta * 0.02));
     bonusSizeShrinkDelay = 0;
   }
   scoreText.scale.set(1 + (bonusSize / 10));
+}
+
+/** Reset state */
+export function resetScore() {
+  score = 0;
+  bonusSize = 1;
+  scoreText.text = '0';
+}
+
+export function getScore() {
+  return score;
 }

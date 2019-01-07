@@ -18,7 +18,9 @@ import {
   utils,
   ZContainer,
 } from './pixi_alias';
-import { addScore, initScoreText, updateScoreText } from './ui/score_text';
+import {
+  addScore, getScore, initScoreText, resetScore, updateScoreText,
+} from './ui/score_text';
 
 let type: string = 'WebGL';
 if (!utils.isWebGLSupported()) {
@@ -74,19 +76,33 @@ function loadProgressHandler(load, resource) {
 // Things used in the game
 let gameState: (delta: number) => void;
 let chungus: Chungus;  // the player
+
 /** Limit to number of instances */
 const ENEMY_POPULATION_LIMIT = 50;
 /** to disallow enemies from spawning too close to chungus */
 const MIN_SPAWN_DISTANCE_SQUARED = 210 ** 2;
 
-const ELMER_SPAWN_COOLDOWN = 200;
-// Current cooldown between elmer spawns (frames)
-let elmerSpawnCooldown = ELMER_SPAWN_COOLDOWN;
+/**** Variables relating to enemy spawning and difficulty ****/
+const ELMER_SPAWN_MIN_COOLDOWN = 50;
+/** extra cooldown affected by difficulty */
+const ELMER_SPAWN_MAX_COOLDOWN = 350;
+/** actual cooldown value to use */
+let elmerSpawnCooldown = ELMER_SPAWN_MAX_COOLDOWN;
+/** Current cooldown value between elmer spawns (frames) */
+let elmerSpawnTimer = ELMER_SPAWN_MIN_COOLDOWN;
+/** How many elmers spawn at once */
+let elmerSpawnWaveSize = 1;
 let elmerFactory: Factory<Elmer>;
 
-const TAZ_SPAWN_COOLDOWN = 200;
-// Current cooldown between taz spawns (frames)
-let tazSpawnCooldown = TAZ_SPAWN_COOLDOWN;
+const TAZ_SPAWN_MIN_COOLDOWN = 50;
+/** extra cooldown affected by difficulty */
+const TAZ_SPAWN_MAX_COOLDOWN = 400;
+/** actual cooldown value to use */
+let tazSpawnCooldown = TAZ_SPAWN_MAX_COOLDOWN;
+/** Current cooldown value between taz spawns (frames) */
+let tazSpawnTimer = TAZ_SPAWN_MIN_COOLDOWN;
+/** How many taz spawn at once */
+let tazSpawnWaveSize = 1;
 const tazFactory: Factory<Taz> = new Factory(
   () => new Taz(
     resources[TAZ_BODY_PATH].texture,
@@ -198,31 +214,9 @@ function gameLoop(delta: number) {
  * @param delta frame time difference
  */
 function play(delta: number) {
-  // Spawn new elmer now and then
-  elmerSpawnCooldown -= delta;
-  if (elmerSpawnCooldown < 0) {
-    elmerSpawnCooldown = ELMER_SPAWN_COOLDOWN;
-    const elmer = elmerFactory.spawn();
-    if (elmer) {
-      zStage.addChild(elmer);
-      const [x, y] = randPosAwayFrom(
-        100, 400, chungus.position, MIN_SPAWN_DISTANCE_SQUARED,
-      );
-      elmer.position.set(x, y);
-    }
-  }
-  tazSpawnCooldown -= delta;
-  if (tazSpawnCooldown < 0) {
-    tazSpawnCooldown = TAZ_SPAWN_COOLDOWN;
-    const taz = tazFactory.spawn();
-    if (taz) {
-      zStage.addChild(taz);
-      const [x, y] = randPosAwayFrom(
-        100, 400, chungus.position, MIN_SPAWN_DISTANCE_SQUARED,
-      );
-      taz.position.set(x, y);
-    }
-  }
+  // Spawn new enemies now and then
+  updateElmerSpawn(delta);
+  updateTazSpawn(delta);
 
   // Update everything
   chungus.update(delta);
@@ -301,6 +295,8 @@ function play(delta: number) {
   updateLayersOrder();
   // update ui
   updateScoreText(delta);
+
+  updateDifficulty(getScore());
 }
 
 /**
@@ -326,4 +322,66 @@ function checkMouse(): void {
   }
   // this is actually reassigning to itself...
   stageMousePos = interaction.mouse.getLocalPosition(map, stageMousePos);
+}
+
+/** handle elmer spawning */
+function updateElmerSpawn(delta: number) {
+  elmerSpawnTimer -= delta;
+  if (elmerSpawnTimer < 0) {
+    elmerSpawnTimer = elmerSpawnCooldown;
+    const elmers = elmerFactory.spawnMultiple(elmerSpawnWaveSize);
+    let x: number;
+    let y: number;
+    for (const elmer of elmers) {
+      zStage.addChild(elmer);
+      [x, y] = randPosAwayFrom(
+        80, 440, chungus.position, MIN_SPAWN_DISTANCE_SQUARED,
+      );
+      elmer.position.set(x, y);
+    }
+  }
+}
+
+/** handle taz spawning */
+function updateTazSpawn(delta: number) {
+  tazSpawnTimer -= delta;
+  if (tazSpawnTimer < 0) {
+    tazSpawnTimer = tazSpawnCooldown;
+    const tazs = tazFactory.spawnMultiple(tazSpawnWaveSize);
+    let x: number;
+    let y: number;
+    for (const taz of tazs) {
+      zStage.addChild(taz);
+      [x, y] = randPosAwayFrom(
+        100, 400, chungus.position, MIN_SPAWN_DISTANCE_SQUARED,
+      );
+      taz.position.set(x, y);
+    }
+  }
+}
+
+/**
+ * Recalculate things like spawn rate to match the difficulty.
+ * @param difficulty How difficult. Higher number is more difficult.
+ */
+function updateDifficulty(difficulty: number): void {
+  elmerSpawnCooldown = ELMER_SPAWN_MAX_COOLDOWN - difficulty * 2;
+  tazSpawnCooldown = TAZ_SPAWN_MAX_COOLDOWN - difficulty * 2;
+  // Elmer spawn wave size increases every 50 difficulty starting diff 30
+  let counter = 30;
+  for (elmerSpawnWaveSize = 1; counter < difficulty;) {
+    counter += 50;
+    elmerSpawnWaveSize++;
+    elmerSpawnCooldown += 40;
+  }
+  // Taz spawn wave size increase every 50 difficulty starting from diff 5
+  counter = 5;
+  for (tazSpawnWaveSize = 0; counter < difficulty;) {
+    counter += 50;
+    tazSpawnWaveSize++;
+    tazSpawnCooldown += 40;
+  }
+  // cap minimum cooldown if needed
+  elmerSpawnCooldown = Math.max(elmerSpawnCooldown, ELMER_SPAWN_MIN_COOLDOWN);
+  tazSpawnCooldown = Math.max(tazSpawnCooldown, TAZ_SPAWN_MIN_COOLDOWN);
 }
