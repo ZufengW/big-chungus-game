@@ -2,6 +2,8 @@ import { Character } from './containers/character';
 import { Elmer } from './containers/elmer';
 import { Factory } from './containers/factory';
 import { Taz } from './containers/taz';
+import { Text } from './pixi_alias';
+import { installWaveText, setWaveTextNum } from './ui/wave_text';
 
 enum WaveState {
   None,
@@ -39,15 +41,25 @@ const spawnTaz = () => tazFactory.spawn();
 const spawnQueue = [spawnElmer, spawnElmer, spawnTaz, spawnElmer, spawnTaz];
 /** Current position in the spawn queue. Index of what to spawn next. */
 let spawnQueuePos = 0;
+/** UI component for waves */
+let waveText: Text;
 
 /**
  * Set up the waves system
  * @param eFactory factory that spawns Elmer
  * @param tFactory factory that spawns Taz
+ * @return Text that displays info about the current wave.
+ *  Need to position and add to stage.
  */
-export function installWaves(eFactory: Factory<Elmer>, tFactory: Factory<Taz>) {
+export function installWaves(
+    eFactory: Factory<Elmer>,
+    tFactory: Factory<Taz>,
+  ): Text {
   elmerFactory = eFactory;
   tazFactory = tFactory;
+
+  waveText = installWaveText();
+  return waveText;
 }
 
 /**
@@ -147,6 +159,7 @@ function updateWaiting(delta: number) {
 function beginNextWave() {
   // set up variables
   waveNumber++;
+  setWaveTextNum(waveNumber);
   waveTime = 0;
   nextSpawnTime = 0;
   spawnQueuePos = 0;

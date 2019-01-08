@@ -179,7 +179,9 @@ function setup() {
     );
   }, ENEMY_POPULATION_LIMIT);
 
-  installWaves(elmerFactory, tazFactory);
+  const waveText = installWaves(elmerFactory, tazFactory);
+  waveText.position.set(APP_WIDTH - 100, 60);
+  app.stage.addChild(waveText);
 
   // Add healthBar to stage later so it is drawn on top
   app.stage.addChild(healthBar);
