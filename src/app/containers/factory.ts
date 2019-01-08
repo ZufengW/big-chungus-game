@@ -97,4 +97,15 @@ export class Factory<T extends IRespawnable> {
   public numInstances(): number {
     return this.instances.length;
   }
+
+  /** @return total number of active instances */
+  public numActiveInstances(): number {
+    let numActive = 0;
+    for (const c of this.instances) {
+      if (!c.isInactive()) {
+        numActive++;
+      }
+    }
+    return numActive;
+  }
 }
