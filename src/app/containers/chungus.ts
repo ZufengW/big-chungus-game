@@ -110,13 +110,17 @@ export class Chungus extends Character {
   /**
    * Should check isVulnerable before doing this.
    * @param from thing to take damage from.
+   * @param hurt whether or not actually taking damage (or just knockback).
+   *  Default true.
    */
-  public takeDamage(from?: MovingContainer): void {
-    this.healthBar.addHealth(-1);
-    if (this.healthBar.getHealth() <= 0) {
-      super.takeDamage(from);
+  public takeDamage(from?: MovingContainer, hurt = true): void {
+    if (hurt) {
+      this.healthBar.addHealth(-1);
+      if (this.healthBar.getHealth() <= 0) {
+        super.takeDamage(from);
+      }
+      this.body.tint = 0xff3333;
     }
-    this.body.tint = 0xff3333;
     if (!!from) {
       this.dx += from.dx + Math.random();
       this.dy += from.dy + Math.random();

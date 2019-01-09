@@ -112,7 +112,7 @@ export class Elmer extends Character {
     }
   }
 
-  public takeDamage(from?: Character) {
+  public takeDamage(from?: MovingContainer) {
     this.aimLine.visible = false;
     super.takeDamage(from);
   }

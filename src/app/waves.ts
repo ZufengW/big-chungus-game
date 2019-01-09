@@ -1,6 +1,7 @@
 import { Character } from './containers/character';
 import { Elmer } from './containers/elmer';
 import { Factory } from './containers/factory';
+import { MovingContainer } from './containers/moving_container';
 import { Taz } from './containers/taz';
 import { Text } from './pixi_alias';
 import { installWaveText, setWaveTextNum } from './ui/wave_text';
@@ -86,7 +87,7 @@ function getWaveSpawningDuration(n: number) {
  *  (empty if nothing spawned)
  *  Those characters still need to be positioned.
  */
-export function updateWave(delta: number): Character[] {
+export function updateWave(delta: number): MovingContainer[] {
   switch (waveState) {
     case WaveState.None:
       updateResting(delta);
@@ -117,7 +118,7 @@ function updateResting(delta: number) {
  * Spawn creatures for this wave.
  * @param delta frame time
  */
-function updateSpawning(delta: number): Character[] {
+function updateSpawning(delta: number): MovingContainer[] {
   waveTime += delta;
 
   /** characters spawned this update */

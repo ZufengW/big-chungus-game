@@ -12,7 +12,7 @@ let bonusSize = 1;
 /** Countdown before bonus size starts shrinking */
 let bonusSizeShrinkDelay = 0;
 
-const MAX_BONUS_SIZE = 30;
+const MAX_BONUS_SIZE = 20;
 /** delay before bonusSize starts dropping. In frames */
 const SHRINK_DELAY = 60;
 

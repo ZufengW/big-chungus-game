@@ -1,4 +1,5 @@
 import './../styles/app.css';
+import { Boulder } from './containers/boulder';
 import { Bullet } from './containers/bullet';
 import { Chungus } from './containers/chungus';
 import { Elmer } from './containers/elmer';
@@ -55,6 +56,7 @@ const BULLET_PATH = './assets/bullet.png';
 const TAZ_BODY_PATH = './assets/taz-body-sm.png';
 const TAZ_ARM_PATH = './assets/taz-arm-sm.png';
 const TAZ_EYES_RED_PATH = './assets/taz-eyes-red-sm.png';
+const BOULDER_PATH = './assets/boulder.png';
 
 // Load the assets
 loader
@@ -66,6 +68,7 @@ loader
   .add(TAZ_ARM_PATH)
   .add(TAZ_EYES_RED_PATH)
   .add(BULLET_PATH)
+  .add(BOULDER_PATH)
   .on('progress', loadProgressHandler)
   .load(setup);
 
@@ -101,6 +104,7 @@ const bulletFactory: Factory<Bullet> = new Factory(
 );
 
 let treasure: Treasure;  // treasure chest
+let boulder: Boulder;
 /** mouse position in stage coordinates */
 let stageMousePos: Point = new Point(0, 0);
 /** The map within the stage */
@@ -179,6 +183,9 @@ function setup() {
     );
   }, ENEMY_POPULATION_LIMIT);
 
+  boulder = new Boulder(resources[BOULDER_PATH].texture);
+  zStage.addChild(boulder);
+
   const waveText = installWaves(elmerFactory, tazFactory);
   waveText.position.set(APP_WIDTH - 100, 60);
   app.stage.addChild(waveText);
@@ -204,8 +211,8 @@ function gameLoop(delta: number) {
 function play(delta: number) {
   // Spawn new enemies now and then
 
-  const characters = updateWave(delta);
-  for (const c of characters) {
+  const movers = updateWave(delta);
+  for (const c of movers) {
     zStage.addChild(c);
     const [x, y] = randPosAwayFrom(
       80, 440, chungus.position, MIN_SPAWN_DISTANCE_SQUARED,
@@ -217,11 +224,13 @@ function play(delta: number) {
   chungus.update(delta);
   checkMouse();
   chungus.dashDest = stageMousePos;
+  boulder.update(delta);
   elmerFactory.forEach((elmer) => {elmer.update(delta); });
   tazFactory.forEach((taz) => {taz.update(delta); });
 
   // postUpdate everything
   chungus.postUpdate(delta);
+  boulder.postUpdate(delta);
   bulletFactory.forEach((bullet) => {
     if (!bullet.isInactive()) {
       bullet.postUpdate(delta);
@@ -257,6 +266,10 @@ function play(delta: number) {
     DUNGEON_MIX_X, DUNGEON_MAX_X,
     DUNGEON_MIN_Y, DUNGEON_MAX_Y,
   );
+  boulder.constrainPosition(
+    DUNGEON_MIX_X, DUNGEON_MAX_X,
+    DUNGEON_MIN_Y, DUNGEON_MAX_Y,
+  );
 
   // chungus can damage enemies when dashing
   if (chungus.isDashing()) {
@@ -272,6 +285,10 @@ function play(delta: number) {
         addScore(1);
       }
     });
+    // Check for boulder collision with enemies
+    if (!boulder.isMovingQuick() && chungus.collision(boulder)) {
+      boulder.takeDamage(chungus);
+    }
   } else if (chungus.isVulnerable()) {
     // taz can damage chungus
     tazFactory.forEach((taz) => {
@@ -279,6 +296,25 @@ function play(delta: number) {
         chungus.takeDamage(taz);
       }
     });
+  }
+  // Boulder can hit and damage elmer and taz
+  if (boulder.isMovingQuick()) {
+    elmerFactory.forEach((elmer) => {
+      if (elmer.isActive() && boulder.collision(elmer)) {
+        elmer.takeDamage(boulder);
+        addScore(1);
+      }
+    });
+    tazFactory.forEach((taz) => {
+      if (taz.isVulnerable() && boulder.collision(taz)) {
+        taz.takeDamage(boulder);
+        addScore(1);
+      }
+    });
+    // Boulder can hit chungus but won't deal damage
+    if (chungus.isVulnerable() && boulder.collision(chungus)) {
+      chungus.takeDamage(boulder, false);
+    }
   }
 
   // Center the screen on Chungus
