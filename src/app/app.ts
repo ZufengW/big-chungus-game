@@ -104,7 +104,8 @@ const bulletFactory: Factory<Bullet> = new Factory(
 );
 
 let treasure: Treasure;  // treasure chest
-let boulder: Boulder;
+/** only initialised at a later wave */
+let boulder: Boulder = null;
 /** mouse position in stage coordinates */
 let stageMousePos: Point = new Point(0, 0);
 /** The map within the stage */
@@ -183,10 +184,15 @@ function setup() {
     );
   }, ENEMY_POPULATION_LIMIT);
 
-  boulder = new Boulder(resources[BOULDER_PATH].texture);
-  zStage.addChild(boulder);
-
-  const waveText = installWaves(elmerFactory, tazFactory);
+  const waveText = installWaves(elmerFactory, tazFactory, (waveNum) => {
+    // Special things to do in some waves
+    if (waveNum === 6) {
+      // Initialise the boulder
+      boulder = new Boulder(resources[BOULDER_PATH].texture);
+      boulder.position.set(APP_WIDTH_HALF, APP_WIDTH_HALF);
+      zStage.addChild(boulder);
+    }
+  });
   waveText.position.set(APP_WIDTH - 100, 60);
   app.stage.addChild(waveText);
 
@@ -224,13 +230,21 @@ function play(delta: number) {
   chungus.update(delta);
   checkMouse();
   chungus.dashDest = stageMousePos;
-  boulder.update(delta);
+  if (boulder) {
+    boulder.update(delta);
+  }
   elmerFactory.forEach((elmer) => {elmer.update(delta); });
   tazFactory.forEach((taz) => {taz.update(delta); });
 
   // postUpdate everything
   chungus.postUpdate(delta);
-  boulder.postUpdate(delta);
+  if (boulder) {
+    boulder.postUpdate(delta);
+    boulder.constrainPosition(
+      DUNGEON_MIX_X, DUNGEON_MAX_X,
+      DUNGEON_MIN_Y, DUNGEON_MAX_Y,
+    );
+  }
   bulletFactory.forEach((bullet) => {
     if (!bullet.isInactive()) {
       bullet.postUpdate(delta);
@@ -266,10 +280,6 @@ function play(delta: number) {
     DUNGEON_MIX_X, DUNGEON_MAX_X,
     DUNGEON_MIN_Y, DUNGEON_MAX_Y,
   );
-  boulder.constrainPosition(
-    DUNGEON_MIX_X, DUNGEON_MAX_X,
-    DUNGEON_MIN_Y, DUNGEON_MAX_Y,
-  );
 
   // chungus can damage enemies when dashing
   if (chungus.isDashing()) {
@@ -285,8 +295,8 @@ function play(delta: number) {
         addScore(1);
       }
     });
-    // Check for boulder collision with enemies
-    if (!boulder.isMovingQuick() && chungus.collision(boulder)) {
+    // Chungus can launch the boulder when it is moving slow
+    if (boulder && !boulder.isMovingQuick() && chungus.collision(boulder)) {
       boulder.takeDamage(chungus);
     }
   } else if (chungus.isVulnerable()) {
@@ -298,7 +308,7 @@ function play(delta: number) {
     });
   }
   // Boulder can hit and damage elmer and taz
-  if (boulder.isMovingQuick()) {
+  if (boulder && boulder.isMovingQuick()) {
     elmerFactory.forEach((elmer) => {
       if (elmer.isActive() && boulder.collision(elmer)) {
         elmer.takeDamage(boulder);

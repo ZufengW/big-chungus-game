@@ -51,6 +51,7 @@ export class Boulder extends MovingContainer {
   /**
    * Constrains this MovingContainer's position to keep it within bounds.
    * Takes into account the dimensions and scale of this MovingContainer.
+   * Boulder bounces off boundaries.
    * @param minX minimum x position
    * @param maxX maximum x position
    * @param minY minimum y position

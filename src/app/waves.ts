@@ -45,19 +45,26 @@ let spawnQueuePos = 0;
 /** UI component for waves */
 let waveText: Text;
 
+/** callback function to call at the beginning of each wave. */
+let beginNextWaveCallback: (waveNum: number) => void;
+
 /**
  * Set up the waves system
  * @param eFactory factory that spawns Elmer
  * @param tFactory factory that spawns Taz
+ * @param beginWaveCallback callback function to call at the beginning of
+ *  each wave.
  * @return Text that displays info about the current wave.
  *  Need to position and add to stage.
  */
 export function installWaves(
     eFactory: Factory<Elmer>,
     tFactory: Factory<Taz>,
+    beginWaveCallback: (waveNum: number) => void,
   ): Text {
   elmerFactory = eFactory;
   tazFactory = tFactory;
+  beginNextWaveCallback = beginWaveCallback;
 
   waveText = installWaveText();
   return waveText;
@@ -160,6 +167,7 @@ function updateWaiting(delta: number) {
 function beginNextWave() {
   // set up variables
   waveNumber++;
+  beginNextWaveCallback(waveNumber);
   setWaveTextNum(waveNumber);
   waveTime = 0;
   nextSpawnTime = 0;
