@@ -154,6 +154,7 @@ export class Taz extends Character {
       this.dx += from.dx * 2;
       this.dy += from.dy * 2;
     }
+    this.aggro = false;
     this.activeState = ActiveState.Hurt;
     this.hurtTime = HURT_DURATION;
   }
@@ -219,9 +220,11 @@ export class Taz extends Character {
     this.dx *= 0.96;
     this.dy *= 0.96;
     this.hurtTime -= delta;
+    // Reduce aggro when hurt
+    this.eyes.alpha -= delta * EYES_TRANSITION_SPEED;
     if (this.hurtTime <= 0) {
       // Change back to Walking state. Stay slightly red.
-      this.body.tint = 0xffeeee;
+      this.body.tint = 0xffaaaa;
       this.activeState = ActiveState.Walking;
     }
   }
