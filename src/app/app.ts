@@ -35,7 +35,12 @@ utils.sayHello(type);
 // and the root stage PIXI.Container
 const APP_WIDTH = 640;  // 1:1 aspect ratio
 const APP_WIDTH_HALF = APP_WIDTH / 2;
-const app = new Application({width: APP_WIDTH, height: APP_WIDTH});
+const app = new Application({
+  width: APP_WIDTH, height: APP_WIDTH,
+  // Use the native window resolution as the default resolution.
+  // Will support high-density displays when rendering.
+  resolution: window.devicePixelRatio,
+});
 app.renderer.autoResize = true;
 app.renderer.resize(APP_WIDTH, APP_WIDTH);
 /** interactionManager: deals with mouse, touch and pointer events */
