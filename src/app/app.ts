@@ -48,6 +48,7 @@ document.getElementById('canvas-div').appendChild(app.view);
 const loadingP = document.getElementById('loading-p');
 
 const resources = loader.resources;  // Alias
+const MAP_PATH = './assets/arena.png';
 const CHUNGUS_PATH = './assets/big-chungus-smaller.png';
 const ELMER_BODY_PATH = './assets/elmer-body-sm.png';
 const ELMER_ARMS_PATH = './assets/elmer-arms-sm.png';
@@ -60,6 +61,7 @@ const BOULDER_PATH = './assets/boulder.png';
 
 // Load the assets
 loader
+  .add(MAP_PATH)
   .add(CHUNGUS_PATH)
   .add(ELMER_BODY_PATH)
   .add(ELMER_ARMS_PATH)
@@ -137,7 +139,7 @@ function setup() {
   const id = loader.resources[TREASURE_HUNTER_PATH].textures;
 
   // Create the map and zStage
-  map = new Sprite(id['dungeon.png']);
+  map = new Sprite(resources[MAP_PATH].texture);
   app.stage.addChild(map);
   map.addChild(zStage);
 
@@ -327,10 +329,11 @@ function play(delta: number) {
     }
   }
 
-  // Center the screen on Chungus
+  // Center the screen on Chungus. Round to integer avoid blurring.
+  // Note that changing the map's position also changes chungus's global pos.
   const globalChungusPos = chungus.getGlobalPosition();
-  map.x += APP_WIDTH_HALF - globalChungusPos.x;
-  map.y += APP_WIDTH_HALF - globalChungusPos.y;
+  map.x += APP_WIDTH_HALF - Math.round(globalChungusPos.x);
+  map.y += APP_WIDTH_HALF - Math.round(globalChungusPos.y);
 
   // Update layer order
   updateLayersOrder();
