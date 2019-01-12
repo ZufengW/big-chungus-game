@@ -45,26 +45,37 @@ let spawnQueuePos = 0;
 /** UI component for waves */
 let waveText: Text;
 
-/** callback function to call at the beginning of each wave. */
+/** callback function to call at the beginning of each wave.
+ * @param waveNum wave number of the wave that just began.
+ */
 let beginNextWaveCallback: (waveNum: number) => void;
+/** callback function to call at the end of each wave.
+ * @param waveNum wave number of the wave that just ended.
+ */
+let waveEndedCallback: (waveNum: number) => void;
 
 /**
  * Set up the waves system
  * @param eFactory factory that spawns Elmer
  * @param tFactory factory that spawns Taz
- * @param beginWaveCallback callback function to call at the beginning of
- *  each wave.
+ * @param opts options
+ * * beginWaveCallback callback function to call at the beginning of each wave.
+ * * endWaveCallback callback function to call at the end of each wave.
  * @return Text that displays info about the current wave.
  *  Need to position and add to stage.
  */
 export function installWaves(
     eFactory: Factory<Elmer>,
     tFactory: Factory<Taz>,
-    beginWaveCallback: (waveNum: number) => void,
+    opts: {
+      beginWaveCallback?: (waveNum: number) => void,
+      endWaveCallback?: (waveNum: number) => void,
+    },
   ): Text {
   elmerFactory = eFactory;
   tazFactory = tFactory;
-  beginNextWaveCallback = beginWaveCallback;
+  beginNextWaveCallback = opts.beginWaveCallback;
+  waveEndedCallback = opts.endWaveCallback;
 
   waveText = installWaveText();
   return waveText;
@@ -158,6 +169,9 @@ function updateWaiting(delta: number) {
       && tazFactory.numActiveInstances() === 0) {
     waveState = WaveState.None;
     restTimeRemaining = WAVE_REST_PERIOD;
+    if (waveEndedCallback) {
+      waveEndedCallback(waveNumber);
+    }
   }
 }
 
@@ -167,7 +181,9 @@ function updateWaiting(delta: number) {
 function beginNextWave() {
   // set up variables
   waveNumber++;
-  beginNextWaveCallback(waveNumber);
+  if (beginNextWaveCallback) {
+    beginNextWaveCallback(waveNumber);
+  }
   setWaveTextNum(waveNumber);
   waveTime = 0;
   nextSpawnTime = 0;

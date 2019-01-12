@@ -214,20 +214,28 @@ function setup() {
     );
   }, ENEMY_POPULATION_LIMIT);
 
-  const waveText = installWaves(elmerFactory, tazFactory, (waveNum) => {
-    // Special things to do in some waves
-    if (waveNum === 6) {
-      // Initialise the boulder
-      boulder = new Boulder(resources[BOULDER_PATH].texture);
-      boulder.position.set(APP_WIDTH_HALF, APP_WIDTH_HALF);
-      zStage.addChild(boulder);
-    }
-    const carrot = carrotFactory.spawn();
-    carrot.position.set(
-        randRange(56, 456),
-        randRange(56, 456),
-    );
-    zStage.addChild(carrot);
+  /** Set up waves and install the wave text */
+  const waveText = installWaves(elmerFactory, tazFactory, {
+    beginWaveCallback: (waveNum) => {
+      // Initialise the boulder at the end of wave 5
+      if (waveNum === 5) {
+        boulder = new Boulder(resources[BOULDER_PATH].texture);
+        boulder.position.set(APP_WIDTH_HALF, APP_WIDTH_HALF);
+        zStage.addChild(boulder);
+      }
+      // Spawn a normal carrot at the end of each wave except wave 8;
+      const carrot = carrotFactory.spawn();
+      carrot.position.set(
+          randRange(56, 456),
+          randRange(56, 456),
+      );
+      zStage.addChild(carrot);
+      if (waveNum === 1) {
+        // make this carrot a special one
+        carrot.setScale(0.8);
+        carrot.body.tint = 0x333333;
+      }
+    },
   });
   waveText.position.set(APP_WIDTH - 100, 60);
   app.stage.addChild(waveText);

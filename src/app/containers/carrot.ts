@@ -4,30 +4,14 @@ import {
 import { IRespawnable } from './factory';
 import { MovingContainer } from './moving_container';
 
-/** type of carrot */
-enum CarrotType {
-  Normal,
-  Power,
-}
-
 /**
  * Carrot is a pickup
  */
 export class Carrot extends MovingContainer implements IRespawnable {
-  /** Whether or not the boulder is currently moving quickly */
-  private type: CarrotType = CarrotType.Normal;
 
-  constructor(texture: Texture, type: CarrotType = CarrotType.Normal) {
+  constructor(texture: Texture, power: boolean = false) {
     super(texture);
-    this.type = type;
-    if (this.type === CarrotType.Normal) {
-      this.setScale(0.5);
-    } else {  // Power
-      this.body.tint = 0xffff00;
-    }
-
-    this.setZ(500);
-    this.dz = -1;
+    this.init();
   }
 
   /**
@@ -35,9 +19,11 @@ export class Carrot extends MovingContainer implements IRespawnable {
    * Limitation: assume is a normal carrot
    */
   public init() {
-    this.visible = true;
+    this.setScale(0.4);
+    this.body.tint = 0xffffff;
     this.setZ(500);
     this.dz = -1;
+    this.visible = true;
   }
 
   public isInactive() {
