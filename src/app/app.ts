@@ -1,13 +1,14 @@
 import './../styles/app.css';
 import { Boulder } from './containers/boulder';
 import { Bullet } from './containers/bullet';
+import { Carrot } from './containers/carrot';
 import { Chungus } from './containers/chungus';
 import { Elmer } from './containers/elmer';
 import { Factory } from './containers/factory';
 import { HealthBar } from './containers/health_bar';
 import { Taz } from './containers/taz';
 import { Treasure } from './containers/treasure';
-import { randPosAwayFrom } from './helpers';
+import { randPosAwayFrom, randRange } from './helpers';
 import {
   Application,
   Container,
@@ -80,6 +81,7 @@ const TAZ_BODY_PATH = './assets/taz-body-sm.png';
 const TAZ_ARM_PATH = './assets/taz-arm-sm.png';
 const TAZ_EYES_RED_PATH = './assets/taz-eyes-red-sm.png';
 const BOULDER_PATH = './assets/boulder.png';
+const CARROT_PATH = './assets/carrot.png';
 
 // Load the assets
 loader
@@ -93,6 +95,7 @@ loader
   .add(TAZ_EYES_RED_PATH)
   .add(BULLET_PATH)
   .add(BOULDER_PATH)
+  .add(CARROT_PATH)
   .on('progress', loadProgressHandler)
   .load(setup);
 
@@ -125,6 +128,9 @@ const tazFactory: Factory<Taz> = new Factory(
 );
 const bulletFactory: Factory<Bullet> = new Factory(
   () => new Bullet(resources[BULLET_PATH].texture),
+);
+const carrotFactory: Factory<Carrot> = new Factory(
+  () => new Carrot(resources[CARROT_PATH].texture),
 );
 
 let treasure: Treasure;  // treasure chest
@@ -216,6 +222,12 @@ function setup() {
       boulder.position.set(APP_WIDTH_HALF, APP_WIDTH_HALF);
       zStage.addChild(boulder);
     }
+    const carrot = carrotFactory.spawn();
+    carrot.position.set(
+        randRange(56, 456),
+        randRange(56, 456),
+    );
+    zStage.addChild(carrot);
   });
   waveText.position.set(APP_WIDTH - 100, 60);
   app.stage.addChild(waveText);
@@ -259,6 +271,7 @@ function play(delta: number) {
   }
   elmerFactory.forEach((elmer) => {elmer.update(delta); });
   tazFactory.forEach((taz) => {taz.update(delta); });
+  carrotFactory.forEach((carrot) => {carrot.update(delta); });
 
   // postUpdate everything
   chungus.postUpdate(delta);
@@ -297,6 +310,11 @@ function play(delta: number) {
         DUNGEON_MIN_Y, DUNGEON_MAX_Y,
       );
     }
+  });
+  // chungus can pick up carrots
+  carrotFactory.forEach((carrot) => {
+    carrot.postUpdate(delta);
+    // TODO
   });
 
   // Constrain chungus to keep it within walls
