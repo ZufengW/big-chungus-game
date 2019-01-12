@@ -1,6 +1,7 @@
 /**
  * PIXI aliases
  */
+import * as Filters from 'pixi-filters';
 import * as PIXI from 'pixi.js';
 
 import Application = PIXI.Application;
@@ -31,6 +32,7 @@ export {
   Application,
   Circle,
   Container,
+  Filters,
   Graphics,
   InteractionManager,
   loader,

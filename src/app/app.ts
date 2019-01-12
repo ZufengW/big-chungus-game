@@ -12,6 +12,7 @@ import { randPosAwayFrom, randRange } from './helpers';
 import {
   Application,
   Container,
+  Filters,
   InteractionManager,
   loader,
   Point,
@@ -233,7 +234,9 @@ function setup() {
       if (waveNum === 1) {
         // make this carrot a special one
         carrot.setScale(0.8);
-        carrot.body.tint = 0x333333;
+        carrot.body.filters = [
+          new Filters.GlowFilter(15, 2, 1, 0x00ffff, 0.5),
+        ];
       }
     },
   });
