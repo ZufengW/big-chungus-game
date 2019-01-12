@@ -49,4 +49,8 @@ export class HealthBar extends Container {
   public getHealth(): number {
     return this.health;
   }
+
+  public getMaxHealth(): number {
+    return this.maxHealth;
+  }
 }

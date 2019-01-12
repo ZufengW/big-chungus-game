@@ -90,7 +90,7 @@ export class MovingContainer extends ZContainer {
    */
   public setZ(z: number): void {
     this.z = z;
-    this.body.y = (this.body.height / 2) - (this.z / this.scale.y);
+    this.body.y = (this.body.height / 2) - this.z;
     // normalize z to a value in range [0..1]
     const normZ = normalize(z);
     this.shadow.scale.set(1 - normZ);

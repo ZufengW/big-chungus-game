@@ -9,11 +9,11 @@ enum ActiveState {
 }
 
 /** how long the carrot spends rising (frames) after being picked up */
-const RAISE_DURATION = 40;
+const RAISE_DURATION = 30;
 /** How quickly the carrot rises after being picked up */
 const RAISE_SPEED = 3;
-/** How quickly the carrot scales down after rising */
-const SHRINK_SPEED = 0.00390625;
+/** How long the carrot spends shrinking after rising */
+const SHRINK_DURATION = 40;
 
 /**
  * Carrot is a pickup. When picked up, moves to destination position.
@@ -25,14 +25,17 @@ export class Carrot extends MovingContainer implements IRespawnable {
 
   /** the thing that picked it up */
   private picker: MovingContainer;
-  private callback: () => void;
+  /** called after picking up */
+  private callback: (carrot: Carrot) => void;
+  /** to remember the starting scale of the carrot when it was picked up */
+  private pickUpScale: number;
 
   /**
    * Create a new Carrot
    * @param texture for body
    * @param callback called after picked up
    */
-  constructor(texture: Texture, callback: () => void) {
+  constructor(texture: Texture, callback: (carrot: Carrot) => void) {
     super(texture);
     this.init();
     this.callback = callback;
@@ -50,6 +53,7 @@ export class Carrot extends MovingContainer implements IRespawnable {
     this.dy = 0;
     this.dz = -1;
     this.body.filters = [];
+    this.picker = null;
     this.visible = true;
   }
 
@@ -78,9 +82,17 @@ export class Carrot extends MovingContainer implements IRespawnable {
    */
   public pickUp(by: MovingContainer) {
     // Change state
+    if (!this.canPickUp()) {
+      return;
+    }
     this.state = ActiveState.Picked;
     this.stateTime = 0;
     this.picker = by;
+    this.pickUpScale = this.scale.x;
+  }
+
+  public cancelPickUp() {
+    this.picker = null;
   }
 
   /** Update picked up state
@@ -90,26 +102,50 @@ export class Carrot extends MovingContainer implements IRespawnable {
     if (this.visible === false) {
       return;
     }
-    this.stateTime += delta;
-
-    // (Mostly) a function of stateTime...
-    this.x = this.picker.x;
-    this.y = this.picker.y + 5;
-    if (this.stateTime > RAISE_DURATION) {
-      /** shrink... */
-      const shrinkTime = this.stateTime - RAISE_DURATION;
-      const currentScale = this.scale.x;
-      if (currentScale > MovingContainer.MIN_SCALE) {
-        this.setScale(currentScale - shrinkTime * SHRINK_SPEED);
-      } else {
-        // Finished eating. Deactivate.
-        this.setScale(0);
-        this.visible = false;
-        this.callback();
-      }
-      this.setZ(RAISE_DURATION * RAISE_SPEED + this.picker.getZ());
+    let extraZ = 0;
+    if (this.picker) {
+      this.stateTime += delta;
+      const newPos = this.picker.position;
+      this.x = newPos.x;
+      this.y = newPos.y + 5;
+      extraZ = this.picker.getZ();
     } else {
-      this.setZ(this.stateTime * RAISE_SPEED + this.picker.getZ());
+      // undo the pickup (faster rate than picking up)
+      this.stateTime -= delta * 2;
+      if (this.stateTime < 0) {
+        this.state = ActiveState.Idle;
+        this.stateTime = 0;
+      }
     }
+
+    // (Mostly) a stateless function of stateTime...
+    if (this.stateTime > RAISE_DURATION) {
+      /** how long been shrinking for */
+      const shrinkTime = this.stateTime - RAISE_DURATION;
+
+      if (shrinkTime > SHRINK_DURATION) {
+        // Finished shrinking. The callback is the last chance to deactivate.
+        this.callback(this);
+        if (this.picker) {
+          this.visible = false;
+        } else {
+          // Go back
+          this.stateTime -= delta;
+        }
+      } else {
+        // shrink from this.pickUpScale down to to MovingContainer.MIN_SCALE
+        const shrinkRatio = shrinkTime / SHRINK_DURATION;
+        const shrinkAmount = (this.pickUpScale - MovingContainer.MIN_SCALE) * shrinkRatio;
+        this.setScale(this.pickUpScale - shrinkAmount);
+      }
+
+      this.setZ(RAISE_DURATION * RAISE_SPEED + extraZ);
+    } else {
+      if (this.scale.x !== this.pickUpScale) {
+        this.setScale(this.pickUpScale);
+      }
+      this.setZ(this.stateTime * RAISE_SPEED + extraZ);
+    }
+    this.dz = 0;  // Don't want this interfering with the animation
   }
 }

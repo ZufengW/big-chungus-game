@@ -134,9 +134,14 @@ const bulletFactory: Factory<Bullet> = new Factory(
 const carrotFactory: Factory<Carrot> = new Factory(
     () => new Carrot(
         resources[CARROT_PATH].texture,
-        () => {
+        (carrot) => {
           if (healthBar.getHealth() > 0) {
-            healthBar.addHealth(1);
+            if (healthBar.getHealth() < healthBar.getMaxHealth()) {
+              healthBar.addHealth(1);
+            } else {
+              // Actually on maxHealth now. Don't need it anymore.
+              carrot.cancelPickUp();
+            }
           }
         },
     ),
@@ -330,10 +335,11 @@ function play(delta: number) {
       );
     }
   });
-  // chungus can pick up carrots
+  // chungus can pick up carrots when below max health
   carrotFactory.forEach((carrot) => {
     carrot.postUpdate(delta);
-    if (carrot.canPickUp() && carrot.collision(chungus)) {
+    if (healthBar.getHealth() < healthBar.getMaxHealth()
+        && carrot.canPickUp() && carrot.collision(chungus)) {
       carrot.pickUp(chungus);
     }
   });
