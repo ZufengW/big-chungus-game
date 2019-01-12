@@ -158,6 +158,11 @@ export class MovingContainer extends ZContainer {
       this.y = maxiY;
     }
   }
+
+  /** in case need to show or hide shadow */
+  protected setShadowVisibility(value: boolean) {
+    this.shadow.visible = value;
+  }
 }
 
 const MAX_NUM = 600;

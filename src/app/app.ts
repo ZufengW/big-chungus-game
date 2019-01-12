@@ -108,6 +108,7 @@ function loadProgressHandler(load, resource) {
 // Things used in the game
 let gameState: (delta: number) => void;
 let chungus: Chungus;  // the player
+let healthBar: HealthBar;  // player's health bar
 
 /** Limit to number of instances */
 const ENEMY_POPULATION_LIMIT = 50;
@@ -176,7 +177,7 @@ function setup() {
   app.stage.addChild(scoreText);
 
   // Create the health bar and the player
-  const healthBar = new HealthBar(5);
+  healthBar = new HealthBar(5);
   healthBar.pivot.set(0, healthBar.height / 2);
   healthBar.position.set(60, 60);
 
@@ -325,7 +326,9 @@ function play(delta: number) {
   // chungus can pick up carrots
   carrotFactory.forEach((carrot) => {
     carrot.postUpdate(delta);
-    // TODO
+    if (carrot.canPickUp() && carrot.collision(chungus)) {
+      carrot.pickUp();
+    }
   });
 
   // Constrain chungus to keep it within walls
