@@ -4,6 +4,7 @@ import { Graphics, Sprite, Texture, ZContainer } from '../pixi_alias';
  * Has velocity and update. And shadow and z (elevation)
  */
 export class MovingContainer extends ZContainer {
+  public static readonly MIN_SCALE = 0.00390625;
   /** Velocity */
   public dx: number = 0;
   public dy: number = 0;
@@ -77,8 +78,10 @@ export class MovingContainer extends ZContainer {
    * @param scale to set
    */
   public setScale(scale: number): void {
-    this.scale.set(scale);
-    this.radius = this.originalRadius * scale;
+    // Avoid setting to 0 or negative
+    const newScale = Math.max(scale, MovingContainer.MIN_SCALE);
+    this.scale.set(newScale);
+    this.radius = this.originalRadius * newScale;
   }
 
   /**

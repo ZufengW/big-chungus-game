@@ -132,7 +132,14 @@ const bulletFactory: Factory<Bullet> = new Factory(
   () => new Bullet(resources[BULLET_PATH].texture),
 );
 const carrotFactory: Factory<Carrot> = new Factory(
-  () => new Carrot(resources[CARROT_PATH].texture),
+    () => new Carrot(
+        resources[CARROT_PATH].texture,
+        () => {
+          if (healthBar.getHealth() > 0) {
+            healthBar.addHealth(1);
+          }
+        },
+    ),
 );
 
 let treasure: Treasure;  // treasure chest
@@ -327,7 +334,7 @@ function play(delta: number) {
   carrotFactory.forEach((carrot) => {
     carrot.postUpdate(delta);
     if (carrot.canPickUp() && carrot.collision(chungus)) {
-      carrot.pickUp();
+      carrot.pickUp(chungus);
     }
   });
 
