@@ -109,6 +109,8 @@ function loadProgressHandler(load, resource) {
 let gameState: (delta: number) => void;
 let chungus: Chungus;  // the player
 let healthBar: HealthBar;  // player's health bar
+/** a unique power up */
+let powerCarrot: Carrot;
 
 /** Limit to number of instances */
 const ENEMY_POPULATION_LIMIT = 50;
@@ -132,20 +134,25 @@ const bulletFactory: Factory<Bullet> = new Factory(
   () => new Bullet(resources[BULLET_PATH].texture),
 );
 const carrotFactory: Factory<Carrot> = new Factory(
-    () => new Carrot(
-        resources[CARROT_PATH].texture,
-        (carrot) => {
-          if (healthBar.getHealth() > 0) {
-            if (healthBar.getHealth() < healthBar.getMaxHealth()) {
-              healthBar.addHealth(1);
-            } else {
-              // Actually on maxHealth now. Don't need it anymore.
-              carrot.cancelPickUp();
-            }
-          }
-        },
-    ),
+    () => new Carrot(resources[CARROT_PATH].texture, carrotPickedUp),
 );
+
+/** callback function for when the carrot has finished being picked up */
+function carrotPickedUp(carrot: Carrot) {
+  if (carrot === powerCarrot) {
+    // power up effect
+    healthBar.powerUp();
+    // Remove the reference because the factory will reuse this carrot.
+    powerCarrot = null;
+  } else if (healthBar.getHealth() > 0) {
+    if (healthBar.getHealth() < healthBar.getMaxHealth()) {
+      healthBar.addHealth(1);
+    } else {
+      // Actually on maxHealth now. Don't need it anymore.
+      carrot.cancelPickUp();
+    }
+  }
+}
 
 let treasure: Treasure;  // treasure chest
 /** only initialised at a later wave */
@@ -250,6 +257,7 @@ function setup() {
         carrot.body.filters = [
           new Filters.GlowFilter(15, 2, 1, 0x00ffff, 0.5),
         ];
+        powerCarrot = carrot;
       }
     },
   });
@@ -296,6 +304,7 @@ function play(delta: number) {
   elmerFactory.forEach((elmer) => {elmer.update(delta); });
   tazFactory.forEach((taz) => {taz.update(delta); });
   carrotFactory.forEach((carrot) => {carrot.update(delta); });
+  healthBar.update(delta);
 
   // postUpdate everything
   chungus.postUpdate(delta);
@@ -338,7 +347,10 @@ function play(delta: number) {
   // chungus can pick up carrots when below max health
   carrotFactory.forEach((carrot) => {
     carrot.postUpdate(delta);
-    if (healthBar.getHealth() < healthBar.getMaxHealth()
+    if (carrot === powerCarrot
+        && carrot.canPickUp() && carrot.collision(chungus)) {
+      carrot.pickUp(chungus);
+    } else if (healthBar.getHealth() < healthBar.getMaxHealth()
         && carrot.canPickUp() && carrot.collision(chungus)) {
       carrot.pickUp(chungus);
     }

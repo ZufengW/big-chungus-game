@@ -1,16 +1,25 @@
 import {
   Container,
+  Filters,
   Graphics,
+  Rectangle,
 } from '../pixi_alias';
 
 /** width of the inner part of the bar */
 const BAR_WIDTH = 128;
 
+const SHOCKWAVE_SPEED = 4;
+
 export class HealthBar extends Container {
+  /** Background bar */
+  private bgBar: Graphics;
+  /** front health bar */
   private outer: Graphics;
   private maxHealth: number;
   /** Current health */
   private health: number;
+
+  private shockwaveFilter: Filters.ShockwaveFilter;
 
   constructor(maxHealth: number) {
     super();
@@ -19,11 +28,12 @@ export class HealthBar extends Container {
     this.health = maxHealth;
 
     // Create the background rectangle
-    const innerBar = new Graphics();
-    innerBar.beginFill(0xffffff);
-    innerBar.drawRect(-2, -2, BAR_WIDTH + 4, 12);
-    innerBar.endFill();
-    this.addChild(innerBar);
+    const bgBar = new Graphics();
+    bgBar.beginFill(0xffffff);
+    bgBar.drawRect(-2, -2, BAR_WIDTH + 4, 12);
+    bgBar.endFill();
+    this.addChild(bgBar);
+    this.bgBar = bgBar;
 
     // Create the front red rectangle
     const outerBar = new Graphics();
@@ -33,6 +43,15 @@ export class HealthBar extends Container {
     this.addChild(outerBar);
 
     this.outer = outerBar;
+    // To allow filters to take up more space
+    this.filterArea = new Rectangle(-100, -100, BAR_WIDTH + 200, 212);
+  }
+
+  public update(delta: number) {
+    // Update the shockwave filter
+    if (this.shockwaveFilter && this.shockwaveFilter.time < 120) {
+      this.shockwaveFilter.time += delta;
+    }
   }
 
   /**
@@ -52,5 +71,29 @@ export class HealthBar extends Container {
 
   public getMaxHealth(): number {
     return this.maxHealth;
+  }
+
+  /** Make this health bar powered up
+   * Add another health segment and start a shockwave effect.
+   */
+  public powerUp() {
+    /** extended health bar */
+    const outerBarExt = new Graphics();
+    outerBarExt.beginFill(0x00ffff);
+    const extentensionWidth = BAR_WIDTH / this.maxHealth;
+    outerBarExt.drawRect(0, 0, extentensionWidth , 8);
+    outerBarExt.endFill();
+    this.addChild(outerBarExt);
+    // Move the existing bars rightwards
+    this.outer.position.set(extentensionWidth, 0);
+    this.bgBar.width += extentensionWidth;
+    const shockFilter = new Filters.ShockwaveFilter([60, 50], {
+      amplitude: 50,
+      brightness: 1,
+      wavelength: 100,
+      speed: SHOCKWAVE_SPEED,
+    });
+    this.filters = [shockFilter];
+    this.shockwaveFilter = shockFilter;
   }
 }

@@ -33,7 +33,8 @@ export class Carrot extends MovingContainer implements IRespawnable {
   /**
    * Create a new Carrot
    * @param texture for body
-   * @param callback called after picked up
+   * @param callback called after the carrot is picked up.
+   * Can still call cancelPickup during this callback to put the carrot back.
    */
   constructor(texture: Texture, callback: (carrot: Carrot) => void) {
     super(texture);
