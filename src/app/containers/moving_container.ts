@@ -87,7 +87,7 @@ export class MovingContainer extends ZContainer {
    */
   public setZ(z: number): void {
     this.z = z;
-    this.body.y = (this.body.height / 2) - this.z;
+    this.body.y = (this.body.height / 2) - (this.z / this.scale.y);
     // normalize z to a value in range [0..1]
     const normZ = normalize(z);
     this.shadow.scale.set(1 - normZ);
@@ -106,10 +106,13 @@ export class MovingContainer extends ZContainer {
     this.y += this.dy * delta;
     // Update elevation (z)
     if (this.dz !== 0) {
-      this.setZ(this.z + this.dz * delta);
-      if (this.z < 0) {
+      const zNext = this.z + this.dz * delta;
+      if (zNext < 0) {
+        // disallow going below 0
         this.setZ(0);
         this.dz = 0;
+      } else {
+        this.setZ(zNext);
       }
     }
 
