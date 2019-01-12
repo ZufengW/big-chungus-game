@@ -33,7 +33,8 @@ utils.sayHello(type);
 // The application will create a renderer using WebGL, if possible,
 // with a fallback to a canvas render. It will also setup the ticker
 // and the root stage PIXI.Container
-const APP_WIDTH = 640;  // 1:1 aspect ratio
+const APP_WIDTH = 640;
+const ASPECT_RATIO = 1; // 1:1 aspect ratio
 const APP_WIDTH_HALF = APP_WIDTH / 2;
 const app = new Application({
   width: APP_WIDTH, height: APP_WIDTH,
@@ -41,8 +42,7 @@ const app = new Application({
   // Will support high-density displays when rendering.
   resolution: window.devicePixelRatio,
 });
-app.renderer.autoResize = true;
-app.renderer.resize(APP_WIDTH, APP_WIDTH);
+
 /** interactionManager: deals with mouse, touch and pointer events */
 const interaction: InteractionManager = app.renderer.plugins.interaction;
 
@@ -51,6 +51,23 @@ const interaction: InteractionManager = app.renderer.plugins.interaction;
 document.getElementById('canvas-div').appendChild(app.view);
 /** p node for displaying loading messages */
 const loadingP = document.getElementById('loading-p');
+
+resize();
+// Make app resize to fit window while maintaining aspect ratio.
+function resize() {
+  let w: number;
+  let h: number;
+  if (window.innerWidth / window.innerHeight >= ASPECT_RATIO) {
+    w = window.innerHeight * ASPECT_RATIO;
+    h = window.innerHeight;
+  } else {
+    w = window.innerWidth;
+    h = window.innerWidth / ASPECT_RATIO;
+  }
+  app.renderer.view.style.width = w + 'px';
+  app.renderer.view.style.height = h + 'px';
+}
+window.onresize = resize;
 
 const resources = loader.resources;  // Alias
 const MAP_PATH = './assets/arena.png';
