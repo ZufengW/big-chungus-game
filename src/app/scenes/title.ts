@@ -12,6 +12,7 @@ import {
   ZContainer,
 } from '../pixi_alias';
 import * as R from '../resources';
+import { Button } from '../ui/button';
 import { SpeechBubble } from '../ui/speech';
 import {
   DUNGEON_MAX_X, DUNGEON_MAX_Y, DUNGEON_MIN_X, DUNGEON_MIN_Y,
@@ -87,6 +88,11 @@ export function create(): ISceneType {
   textMessage.anchor.set(0.5, 0.5);
   textMessage.position.set(APP_WIDTH_HALF, 150);
   sceneStage.addChild(textMessage);
+
+  // Create a button
+  const playButton = new Button('Play', () => { console.log('clicked'); });
+  playButton.position.set(APP_WIDTH_HALF - playButton.width / 2, DUNGEON_MAX_Y);
+  sceneStage.addChild(playButton);
 
   const scene: ISceneType = {
     sceneContainer: sceneStage,
