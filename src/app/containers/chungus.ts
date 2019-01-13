@@ -14,6 +14,22 @@ const NEW_BODY_SCALE = 0.5;
 const SCALE_GROW_SPEED = 0.01;
 /** maximum scale for chungus when fully grown */
 const MAX_POW_SCALE = 3.1;
+/** How long (frames) between chungus activating power and beginning to grow */
+const POW_TIME_BEFORE_GROW = 60 * 7;
+
+/** Things chungus says. delay is after what delay */
+const speeches = [
+  {
+    text: 'YOU FOOLS!       \nTHIS ISN\'T EVEN MY FINAL FORM.',
+    delay: 60,
+    speed: SpeechBubble.SPEAK_SPEED_SLOW,
+  },
+  {
+    text: 'HUMONGOUS CHUNGUS',
+    delay: POW_TIME_BEFORE_GROW - 30,
+    speed: SpeechBubble.SPEAK_SPEED_NORMAL,
+  },
+];
 
 const MOVE_SPEED = 4;
 /** How much chungus waddles */
@@ -58,6 +74,7 @@ export class Chungus extends Character {
   private powerTexture: Texture;
 
   private speechBubble: SpeechBubble;
+  private speechIndex: number = 0;
 
   private getInput: () => [number, number];
 
@@ -155,11 +172,7 @@ export class Chungus extends Character {
       if (this.healthBar.getHealth() <= 0) {
         // 0 health. Either activate power up if have it, or lose.
         if (this.isPoweredUp) {
-          this.powerTime = 1;
-          // Replace the body texture with the power texture.
-          this.body.texture = this.powerTexture;
-          // Scale down the body so that the new texture is same size as old
-          this.body.scale.set(NEW_BODY_SCALE);
+          this.activatePower();
           return;
         }
         super.takeDamage(from);
@@ -235,8 +248,9 @@ export class Chungus extends Character {
         && (this.dx !== 0 || this.dy !== 0);
   }
 
-  public say(text: string) {
-    this.speechBubble.say(text);
+  /** chungus says something new */
+  public say(text: string, speed?: number) {
+    this.speechBubble.say(text, speed);
   }
 
   /** In addition, move the text upwards when chungus goes up  */
@@ -336,14 +350,35 @@ export class Chungus extends Character {
     }
   }
 
+  /** chungus activates the powerup */
+  private activatePower() {
+    this.powerTime = 1;
+    // Replace the body texture with the power texture.
+    this.body.texture = this.powerTexture;
+    // Scale down the body so that the new texture is same size as old
+    this.body.scale.set(NEW_BODY_SCALE);
+  }
+
   /** when powered up */
   private updatePower(delta: number) {
     this.powerTime += delta;
-    const nextScale = Math.min(
-        STARTING_SCALE + this.powerTime * SCALE_GROW_SPEED,
-        MAX_POW_SCALE,
-    );
-    this.setScale(nextScale);
+
+    // Check to see if need to say anything
+    const i = this.speechIndex;
+    if (i < speeches.length && this.powerTime >= speeches[i].delay) {
+      this.say(speeches[i].text, speeches[i].speed);
+      this.speechIndex++;
+    }
+
+    // Start growing after a delay
+    const growTime = this.powerTime - POW_TIME_BEFORE_GROW;
+    if (growTime > 0) {
+      const nextScale = Math.min(
+          STARTING_SCALE + growTime * SCALE_GROW_SPEED,
+          MAX_POW_SCALE,
+      );
+      this.setScale(nextScale);
+    }
   }
 
   /** Reset dash variables */

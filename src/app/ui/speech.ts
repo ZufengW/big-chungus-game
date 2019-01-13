@@ -7,7 +7,6 @@ import {
 
 const TOTAL_HEIGHT = 60;
 
-const SPEAK_SPEED = 0.5;
 /** multiplier for how long the text should remain visible once finished.
  * Lower number is longer duration.
  */
@@ -23,11 +22,18 @@ const PADDING_X2 = PADDING * 2;
  * Speech bubble containing text.
  */
 export class SpeechBubble extends Container {
-  // stringbuilder?
+
+  /** speed for text to appear */
+  public static readonly SPEAK_SPEED_NORMAL = 0.5;
+  public static readonly SPEAK_SPEED_SLOW = 0.25;
+
+  // The thing to say
   private targetText: string = '';
   private bg: Graphics;
   private speechText: Text;
 
+  /** How quickly the text appears */
+  private speakSpeed: number = SpeechBubble.SPEAK_SPEED_NORMAL;
   private speakProgress: number = 0;
   /** How long to spend displaying the speech bubble */
   private textTimeRemaining = 0;
@@ -75,11 +81,16 @@ export class SpeechBubble extends Container {
     this.visible = false;
   }
 
-  /** Begin saying something */
-  public say(text: string) {
+  /** Begin saying something
+   * @param text what to say
+   * @param speed (Optional) how fast to say it. Defaults to normal speed.
+   */
+  public say(text: string, speed = SpeechBubble.SPEAK_SPEED_NORMAL) {
     this.targetText = text;
     this.speakProgress = 0;
     this.textTimeRemaining = text.length + TEXT_REMAIN_EXTRA;
+    this.updateText('');  // Clear the previous text before making visible
+    this.speakSpeed = speed;
     this.visible = true;
   }
 
@@ -92,16 +103,10 @@ export class SpeechBubble extends Container {
       return;  // only update when visible
     }
     if (this.speakProgress <= this.targetText.length) {
-      this.speakProgress += SPEAK_SPEED * delta;
+      this.speakProgress += this.speakSpeed * delta;
       // Continue scrolling message
-      const t = this.targetText.slice(0, Math.floor(this.speakProgress));
-      this.speechText.text = t;
-      // bg needs to cover text
-      this.bg.width = this.speechText.width + PADDING_X2;
-      this.bg.height = this.speechText.height + PADDING_X2;
-      // Note that speechText is anchored at the bottom-left
-      // but bg is anchored at the top-left
-      this.bg.position.y = this.speechText.y - this.speechText.height - PADDING;
+      const newText = this.targetText.slice(0, Math.floor(this.speakProgress));
+      this.updateText(newText);
     } else {
       // Finished speaking.
       // Text remains visible for time proportional to length of text.
@@ -110,5 +115,16 @@ export class SpeechBubble extends Container {
         this.visible = false;
       }
     }
+  }
+
+  /** Update the appearance of the speech bubble with new text */
+  private updateText(text: string) {
+    this.speechText.text = text;
+    // bg needs to cover text
+    this.bg.width = this.speechText.width + PADDING_X2;
+    this.bg.height = this.speechText.height + PADDING_X2;
+    // Note that speechText is anchored at the bottom-left
+    // but bg is anchored at the top-left
+    this.bg.position.y = this.speechText.y - this.speechText.height - PADDING;
   }
 }
