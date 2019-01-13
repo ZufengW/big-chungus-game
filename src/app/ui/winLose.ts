@@ -1,4 +1,4 @@
-import { startTitleScene } from '../app';
+import { restartCurrentScene, startTitleScene } from '../app';
 import {
   Container,
   Graphics,
@@ -99,5 +99,6 @@ export class WinLoseUI extends Container {
 
   private onClickPlayAgain() {
     console.log('click play again'); // TODO: restart the level
+    restartCurrentScene();
   }
 }

@@ -96,12 +96,16 @@ export function create(): ISceneType {
 
   const scene: ISceneType = {
     sceneContainer: sceneStage,
-    // restart,
+    restart,
     update,
     // activate,
     // deactivate,
   };
   return scene;
+}
+
+function restart() {
+  // TODO
 }
 
 function update(delta: number) {

@@ -117,11 +117,17 @@ function gameLoop(delta: number) {
   gameState(delta);
 }
 
-/** Change from one scene to another */
-function switchScene(newScene: ISceneType) {
+/** Change from one scene to another
+ * @param newScene scene to switch to
+ * @param restart whether or not to reset the newScene (default false)
+ */
+function switchScene(newScene: ISceneType, restart = false) {
   // TODO: call preparation functions
   app.stage.removeChildren();
   currentScene.sceneContainer.visible = false;  // Might not need this
+  if (restart) {
+    newScene.restart();
+  }
   newScene.sceneContainer.visible = true;
   app.stage.addChild(newScene.sceneContainer);
   currentScene = newScene;
@@ -140,4 +146,8 @@ export function startTitleScene() {
   if (currentScene !== titleScene) {
     switchScene(titleScene);
   }
+}
+
+export function restartCurrentScene() {
+  currentScene.restart();
 }
