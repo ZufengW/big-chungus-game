@@ -23,6 +23,7 @@ import {
   addScore, initScoreText, updateScoreText,
 } from '../ui/score_text';
 import { installWaves, updateWave } from '../waves';
+import { ISceneType } from './scene';
 
 const resources = loader.resources;  // Alias
 
@@ -74,7 +75,7 @@ Taz.maxY = DUNGEON_MAX_Y - MAP_BOUNDARY_BUFFER;
 /**
  * Create the scene
  */
-function create() {
+export function create(): ISceneType {
   const sceneStage = new Container();
 
   /** Alias to point to the texture atlas's textures object */
@@ -180,7 +181,15 @@ function create() {
   // Add healthBar to stage later so it is drawn on top
   sceneStage.addChild(healthBar);
 
-  return sceneStage;
+  const scene: ISceneType = {
+    sceneContainer: sceneStage,
+    // restart,
+    update,
+    // activate,
+    // deactivate,
+  };
+
+  return scene;
 }
 
 /**
@@ -375,11 +384,3 @@ function checkMouse(): void {
   // this is actually reassigning to itself...
   stageMousePos = interaction.mouse.getLocalPosition(map, stageMousePos);
 }
-
-export {
-  create,
-  // restart,
-  update,
-  // activate,
-  // deactivate,
-};

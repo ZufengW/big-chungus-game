@@ -7,7 +7,9 @@ import {
   utils,
 } from './pixi_alias';
 import * as R from './resources';
-import * as Play from './scenes/play';
+import { create as createPlay } from './scenes/play';
+import { ISceneType } from './scenes/scene';
+import { create as createTitle } from './scenes/title';
 
 let type: string = 'WebGL';
 if (!utils.isWebGLSupported()) {
@@ -79,19 +81,26 @@ function loadProgressHandler(load, resource) {
 // Things used in the game
 let gameState: (delta: number) => void;
 // Scenes
-let playScene: Container;
+let currentScene: ISceneType;
+let titleScene: ISceneType;
+let playScene: ISceneType;
 
 function setup() {
   // clear the loadingP
   loadingP.textContent = '';
 
-  // Set up the first scene
-  playScene = Play.create();
-  app.stage.addChild(playScene);
+  // Set up scenes
+  titleScene = createTitle();
+  playScene = createPlay();
+
+  // Set up the title scene
+  currentScene = titleScene;
+  const sceneContainer = currentScene.sceneContainer;
+  app.stage.addChild(sceneContainer);
 
   // Start the game loop by adding the `gameLoop` function to
   // Pixi's `ticker` and providing it with a `delta` argument.
-  gameState = Play.update;
+  gameState = currentScene.update;
   app.ticker.add((delta) => gameLoop(delta));
 }
 
