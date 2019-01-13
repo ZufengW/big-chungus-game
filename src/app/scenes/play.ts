@@ -59,15 +59,15 @@ const zStage = new Container();
 // UI
 let scoreText: Text;
 
-// Wall boundaries of dungeon.png
-const DUNGEON_MIX_X = 32;
-const DUNGEON_MAX_X = 512 - 32;
-const DUNGEON_MIN_Y = 32;
-const DUNGEON_MAX_Y = 480;
+// Wall boundaries of the map
+export const DUNGEON_MIN_X = 32;
+export const DUNGEON_MAX_X = 512 - 32;
+export const DUNGEON_MIN_Y = 32;
+export const DUNGEON_MAX_Y = 480;
 
 const MAP_BOUNDARY_BUFFER = 50;
 // Set up Taz walking boundaries
-Taz.minX = DUNGEON_MIX_X + MAP_BOUNDARY_BUFFER;
+Taz.minX = DUNGEON_MIN_X + MAP_BOUNDARY_BUFFER;
 Taz.minY = DUNGEON_MIN_Y + MAP_BOUNDARY_BUFFER;
 Taz.maxX = DUNGEON_MAX_X - MAP_BOUNDARY_BUFFER;
 Taz.maxY = DUNGEON_MAX_Y - MAP_BOUNDARY_BUFFER;
@@ -225,7 +225,7 @@ function update(delta: number) {
   if (boulder) {
     boulder.postUpdate(delta);
     boulder.constrainPosition(
-      DUNGEON_MIX_X, DUNGEON_MAX_X,
+      DUNGEON_MIN_X, DUNGEON_MAX_X,
       DUNGEON_MIN_Y, DUNGEON_MAX_Y,
     );
   }
@@ -243,7 +243,7 @@ function update(delta: number) {
     if (elmer.isActive()) {
       // Prevent elmer from leaving the map while active
       elmer.constrainPosition(
-        DUNGEON_MIX_X, DUNGEON_MAX_X,
+        DUNGEON_MIN_X, DUNGEON_MAX_X,
         DUNGEON_MIN_Y, DUNGEON_MAX_Y,
       );
     }
@@ -253,7 +253,7 @@ function update(delta: number) {
     if (taz.isActive()) {
       // Prevent from leaving map while active
       taz.constrainPosition(
-        DUNGEON_MIX_X, DUNGEON_MAX_X,
+        DUNGEON_MIN_X, DUNGEON_MAX_X,
         DUNGEON_MIN_Y, DUNGEON_MAX_Y,
       );
     }
@@ -274,7 +274,7 @@ function update(delta: number) {
 
   // Constrain chungus to keep it within walls
   chungus.constrainPosition(
-    DUNGEON_MIX_X, DUNGEON_MAX_X,
+    DUNGEON_MIN_X, DUNGEON_MAX_X,
     DUNGEON_MIN_Y, DUNGEON_MAX_Y,
   );
 
@@ -332,16 +332,17 @@ function update(delta: number) {
   map.y += APP_WIDTH_HALF - Math.round(globalChungusPos.y) + chungusOffset;
 
   // Update layer order
-  updateLayersOrder();
+  updateLayersOrder(zStage);
   // update ui
   updateScoreText(delta);
 }
 
 /**
  * To update draw order of zContainers
+ * @param container must only contain zContainers
  */
-function updateLayersOrder(): void {
-  zStage.children.sort(compareZIndex);
+export function updateLayersOrder(container: Container): void {
+  container.children.sort(compareZIndex);
 }
 
 /** smaller zIndex should go before larger zIndex */
