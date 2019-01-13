@@ -98,7 +98,7 @@ export class WinLoseUI extends Container {
   }
 
   private onClickPlayAgain() {
-    console.log('click play again'); // TODO: restart the level
+    // Restart the level
     restartCurrentScene();
   }
 }

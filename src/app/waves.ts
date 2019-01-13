@@ -4,7 +4,9 @@ import { Factory } from './containers/factory';
 import { MovingContainer } from './containers/moving_container';
 import { Taz } from './containers/taz';
 import { Text } from './pixi_alias';
-import { installWaveText, setWaveTextNum } from './ui/wave_text';
+import {
+  installWaveText, restart as resetWaveText, setWaveTextNum,
+} from './ui/wave_text';
 
 enum WaveState {
   None,
@@ -79,6 +81,14 @@ export function installWaves(
 
   waveText = installWaveText();
   return waveText;
+}
+
+/** Restart the waves system. Keep using the same factories */
+export function restartWaves() {
+  waveState = WaveState.None;
+  waveNumber = 0;
+  restTimeRemaining = WAVE_REST_PERIOD * 3;
+  resetWaveText();
 }
 
 /**

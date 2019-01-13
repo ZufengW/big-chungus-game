@@ -66,6 +66,7 @@ export function resetScore() {
   score = 0;
   bonusSize = 1;
   scoreText.text = '0';
+  bonusSizeShrinkDelay = 0;
 }
 
 export function getScore() {

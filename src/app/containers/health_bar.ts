@@ -101,12 +101,12 @@ export class HealthBar extends Container {
    */
   public powerUp() {
     /** extended health bar */
-   this.extensionBar.visible = true;
-   const extentensionWidth = this.extensionBar.width;
+    this.extensionBar.visible = true;
+    const extentensionWidth = this.extensionBar.width;
     // Move the existing bars rightwards
-   this.outer.position.set(extentensionWidth, 0);
-   this.bgBar.width += extentensionWidth;
-   this.filters = [this.shockwaveFilter];
+    this.outer.position.set(extentensionWidth, 0);
+    this.bgBar.width += extentensionWidth;
+    this.filters = [this.shockwaveFilter];
   }
 
   /** Resets the health bar back to starting state */

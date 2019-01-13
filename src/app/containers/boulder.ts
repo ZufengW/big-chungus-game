@@ -2,6 +2,7 @@ import { lengthSquared } from '../helpers';
 import {
   Texture,
 } from '../pixi_alias';
+import { IRespawnable } from './factory';
 import { MovingContainer } from './moving_container';
 
 const FAST_THRESHOLD_SQUARED = 12;
@@ -10,7 +11,7 @@ const ROLL_FACTOR = 0.05;
 /**
  * boulder has special logic
  */
-export class Boulder extends MovingContainer {
+export class Boulder extends MovingContainer implements IRespawnable {
   /** Whether or not the boulder is currently moving quickly */
   private movingQuick: boolean = false;
 
@@ -21,6 +22,24 @@ export class Boulder extends MovingContainer {
 
     this.setZ(500);
     this.dz = -1;
+  }
+
+  public init() {
+    this.setZ(500);
+    this.dz = -1;
+    this.visible = true;
+  }
+
+  /** Inactive when not visible */
+  public isInactive() {
+    return !this.visible;
+  }
+
+  public deactivate() {
+    this.visible = false;
+    this.dx = 0;
+    this.dy = 0;
+    this.movingQuick = false;
   }
 
   public update(delta: number) {

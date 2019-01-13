@@ -20,13 +20,15 @@ import {
 } from '../pixi_alias';
 import * as R from '../resources';
 import {
-  addScore, initScoreText, updateScoreText,
+  addScore, initScoreText, resetScore, updateScoreText,
 } from '../ui/score_text';
 import { Kind as EndingType, WinLoseUI } from '../ui/winLose';
 import { installWaves, restartWaves, updateWave } from '../waves';
 import { ISceneType } from './scene';
 
 const resources = loader.resources;  // Alias
+
+const FIRST_THING_CHUNGUS_SAYS = 'What a fine day.';
 
 // Things used in the game
 let chungus: Chungus;  // the player
@@ -97,10 +99,10 @@ export function create(): ISceneType {
   healthBar.position.set(60, 60);
 
   chungus = new Chungus(resources[R.CHUNGUS_PATH].texture, healthBar, resources[R.CHUNGUS_POWER_PATH].texture);
-  chungus.position.set(100, sceneStage.height / 2);
+  chungus.position.set(map.width / 2);
   zStage.addChild(chungus);
   // Chungus says something upon entering
-  chungus.say('What a fine day.');
+  chungus.say(FIRST_THING_CHUNGUS_SAYS);
 
   treasure = new Treasure(id['treasure.png']);
   // Position the treasure next to the right edge of the canvas
@@ -148,6 +150,10 @@ export function create(): ISceneType {
       () => new Carrot(resources[R.CARROT_PATH].texture, carrotPickedUp),
   );
 
+  // Initialise up boulder
+  boulder = new Boulder(resources[R.BOULDER_PATH].texture);
+  boulder.deactivate();
+
   /** Set up waves and install the wave text */
   const waveText = installWaves(elmerFactory, tazFactory, {
     beginWaveCallback: (waveNum) => {
@@ -156,7 +162,7 @@ export function create(): ISceneType {
       }
       // Initialise the boulder at the end of wave 5
       if (waveNum === 5) {
-        boulder = new Boulder(resources[R.BOULDER_PATH].texture);
+        boulder.init();
         boulder.position.set(APP_WIDTH_HALF, APP_WIDTH_HALF);
         zStage.addChild(boulder);
       }
@@ -204,7 +210,6 @@ export function create(): ISceneType {
 
 /** restart the scene */
 function restart() {
-  // TODO
   // Reset all factories
   elmerFactory.restart();
   tazFactory.restart();
@@ -215,14 +220,17 @@ function restart() {
   powerCarrot = null;
   // Reset things
   chungus.deactivate();
-  // TODO: Boulder
-  // UI
+  boulder.deactivate();
+  // Reset UI
   winLoseUI.visible = false;
+  resetScore();
   zStage.removeChildren();
 
   // Reactivate things
-  chungus.init();  // TODO: implement properly
+  chungus.init();
+  chungus.position.set(map.width / 2);
   zStage.addChild(chungus);
+  chungus.say(FIRST_THING_CHUNGUS_SAYS);
 }
 
 /**
@@ -255,7 +263,7 @@ function update(delta: number) {
   chungus.update(delta);
   checkMouse();
   chungus.dashDest = stageMousePos;
-  if (boulder) {
+  if (!boulder.isInactive()) {
     boulder.update(delta);
   }
   elmerFactory.forEach((elmer) => {elmer.update(delta); });
@@ -265,7 +273,7 @@ function update(delta: number) {
 
   // postUpdate everything
   chungus.postUpdate(delta);
-  if (boulder) {
+  if (!boulder.isInactive()) {
     boulder.postUpdate(delta);
     boulder.constrainPosition(
       DUNGEON_MIN_X, DUNGEON_MAX_X,
@@ -336,7 +344,8 @@ function update(delta: number) {
       }
     });
     // Chungus can launch the boulder when it is moving slow
-    if (boulder && !boulder.isMovingQuick() && chungus.collision(boulder)) {
+    if (!boulder.isInactive() && !boulder.isMovingQuick()
+        && chungus.collision(boulder)) {
       boulder.takeDamage(chungus);
     }
   } else if (chungus.isVulnerable()) {
@@ -348,7 +357,7 @@ function update(delta: number) {
     });
   }
   // Boulder can hit and damage elmer and taz
-  if (boulder && boulder.isMovingQuick()) {
+  if (!boulder.isInactive() && boulder.isMovingQuick()) {
     elmerFactory.forEach((elmer) => {
       if (elmer.isActive() && boulder.collision(elmer)) {
         elmer.takeDamage(boulder);
