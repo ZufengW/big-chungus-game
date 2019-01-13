@@ -160,6 +160,8 @@ export function create(): ISceneType {
       if (waveNum === 1) {
         chungus.say('!!!!!!!!!!');
       }
+    },
+    endWaveCallback: (waveNum) => {
       // Initialise the boulder at the end of wave 5
       if (waveNum === 5) {
         boulder.init();
@@ -173,7 +175,7 @@ export function create(): ISceneType {
           randRange(56, 456),
       );
       zStage.addChild(carrot);
-      if (waveNum === 1) {
+      if (waveNum === 8) {
         // make this carrot a special one
         carrot.setScale(0.8);
         carrot.body.filters = [
