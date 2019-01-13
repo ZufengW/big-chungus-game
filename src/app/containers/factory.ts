@@ -1,12 +1,14 @@
 
 /**
- * Things that implement IRespawnable need to have a way
- * to check if it's inactive,
- * and a way to initialise (respawn) it.
+ * Things that implement IRespawnable need to have:
+ * * a way to check if it's inactive,
+ * * a way to initialise (respawn) it.
+ * * a way to deactivate it
  */
 export interface IRespawnable {
   init(): void;
   isInactive(): boolean;
+  deactivate(): void;
 }
 
 /**
@@ -107,5 +109,14 @@ export class Factory<T extends IRespawnable> {
       }
     }
     return numActive;
+  }
+
+  /** deactivates all instances */
+  public restart() {
+    for (const c of this.instances) {
+      if (!c.isInactive()) {
+        c.deactivate();
+      }
+    }
   }
 }

@@ -66,6 +66,11 @@ export class Character extends MovingContainer implements IRespawnable {
     return this.state === State.Inactive;
   }
 
+  public deactivate() {
+    this.visible = false;
+    this.state = State.Inactive;
+  }
+
   /**
    * Resets a character to Entering without using new keyword
    * Should override this class
@@ -121,8 +126,7 @@ export class Character extends MovingContainer implements IRespawnable {
     this.stateTime += delta;
     // TODO: explosion vfx
     if (this.stateTime >  LEAVING_DURATION) {
-      this.state = State.Inactive;
-      this.visible = false;
+      this.deactivate();
     }
     this.body.rotation += this.rotateSpeed;
   }

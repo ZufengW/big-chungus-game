@@ -58,6 +58,10 @@ export class Carrot extends MovingContainer implements IRespawnable {
     this.visible = true;
   }
 
+  public deactivate() {
+    this.visible = false;
+  }
+
   public update(delta: number) {
     super.update(delta);
     if (this.state === ActiveState.Picked) {
@@ -128,9 +132,9 @@ export class Carrot extends MovingContainer implements IRespawnable {
         // Finished shrinking. The callback is the last chance to deactivate.
         this.callback(this);
         if (this.picker) {
-          this.visible = false;
+          this.deactivate();
         } else {
-          // Go back
+          // Cancel pick up
           this.stateTime -= delta;
         }
       } else {
