@@ -73,6 +73,8 @@ export class Chungus extends Character {
   private isPoweredUp = false;
   /** How long the power up state has been active for */
   private powerTime = 0;
+  /** Body texture when normal */
+  private normalTexture: Texture;
   private powerTexture: Texture;
 
   private speechBubble: SpeechBubble;
@@ -89,6 +91,7 @@ export class Chungus extends Character {
    */
   constructor(texture: Texture, healthBar: HealthBar, powerTexture: Texture) {
     super(texture);
+    this.normalTexture = texture;
     this.powerTexture = powerTexture;
 
     // make smaller
@@ -118,6 +121,26 @@ export class Chungus extends Character {
     this.speechBubble = new SpeechBubble();
     // this.speechBubble.position.set(100, 100);
     this.addChild(this.speechBubble);
+  }
+
+  /** Reset chungus's state in preparation for respawning */
+  public init() {
+    super.init();
+    this.activeState = ActiveState.Walking;
+    this.setScale(STARTING_SCALE);
+    this.healthBar.restart();
+    this.resetDash();
+    this.speechBubble.visible = false;  // deactivate speech bubble
+    this.speechIndex = 0;
+    this.powerTime = 0;
+    this.isPoweredUp = false;
+    this.hurtTime = 0;
+    this.waddleState = 0;
+    this.waddleDirection = 1;
+    this.body.tint = 0xffffff;
+    // reset texture
+    this.body.texture = this.normalTexture;
+    this.body.scale.set(1);
   }
 
   public update(delta: number): void {

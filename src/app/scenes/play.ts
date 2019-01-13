@@ -23,7 +23,7 @@ import {
   addScore, initScoreText, updateScoreText,
 } from '../ui/score_text';
 import { Kind as EndingType, WinLoseUI } from '../ui/winLose';
-import { installWaves, updateWave } from '../waves';
+import { installWaves, restartWaves, updateWave } from '../waves';
 import { ISceneType } from './scene';
 
 const resources = loader.resources;  // Alias
@@ -202,8 +202,27 @@ export function create(): ISceneType {
   return scene;
 }
 
+/** restart the scene */
 function restart() {
   // TODO
+  // Reset all factories
+  elmerFactory.restart();
+  tazFactory.restart();
+  bulletFactory.restart();
+  carrotFactory.restart();
+  // Reset waves
+  restartWaves();
+  powerCarrot = null;
+  // Reset things
+  chungus.deactivate();
+  // TODO: Boulder
+  // UI
+  winLoseUI.visible = false;
+  zStage.removeChildren();
+
+  // Reactivate things
+  chungus.init();  // TODO: implement properly
+  zStage.addChild(chungus);
 }
 
 /**

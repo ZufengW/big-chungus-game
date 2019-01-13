@@ -34,3 +34,8 @@ export function installWaveText(): Text {
 export function setWaveTextNum(n: number) {
   messageText.text = 'Wave ' + n;
 }
+
+/** Reset the text */
+export function restart() {
+  messageText.text = '';
+}
