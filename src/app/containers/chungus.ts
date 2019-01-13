@@ -3,6 +3,7 @@ import { setupMoveKeys } from '../input';
 import {
   Graphics, Point, Texture,
 } from '../pixi_alias';
+import { freezeScore } from '../ui/score_text';
 import { SpeechBubble } from '../ui/speech';
 import { Character } from './character';
 import { HealthBar } from './health_bar';
@@ -16,6 +17,8 @@ const SCALE_GROW_SPEED = 0.01;
 const MAX_POW_SCALE = 3.1;
 /** How long (frames) between chungus activating power and beginning to grow */
 const POW_TIME_BEFORE_GROW = 60 * 7;
+/** Delay between activating power and win conditions considered met */
+const POW_TIME_WIN = 60 * 15;
 
 /** Things chungus says. delay is after what delay */
 const speeches = [
@@ -71,6 +74,8 @@ export class Chungus extends Character {
   private isPoweredUp = false;
   /** How long the power up state has been active for */
   private powerTime = 0;
+  /** Body texture when normal */
+  private normalTexture: Texture;
   private powerTexture: Texture;
 
   private speechBubble: SpeechBubble;
@@ -87,6 +92,7 @@ export class Chungus extends Character {
    */
   constructor(texture: Texture, healthBar: HealthBar, powerTexture: Texture) {
     super(texture);
+    this.normalTexture = texture;
     this.powerTexture = powerTexture;
 
     // make smaller
@@ -116,6 +122,26 @@ export class Chungus extends Character {
     this.speechBubble = new SpeechBubble();
     // this.speechBubble.position.set(100, 100);
     this.addChild(this.speechBubble);
+  }
+
+  /** Reset chungus's state in preparation for respawning */
+  public init() {
+    super.init();
+    this.activeState = ActiveState.Walking;
+    this.setScale(STARTING_SCALE);
+    this.healthBar.restart();
+    this.resetDash();
+    this.speechBubble.visible = false;  // deactivate speech bubble
+    this.speechIndex = 0;
+    this.powerTime = 0;
+    this.isPoweredUp = false;
+    this.hurtTime = 0;
+    this.waddleState = 0;
+    this.waddleDirection = 1;
+    this.body.tint = 0xffffff;
+    // reset texture
+    this.body.texture = this.normalTexture;
+    this.body.scale.set(1);
   }
 
   public update(delta: number): void {
@@ -176,6 +202,7 @@ export class Chungus extends Character {
           return;
         }
         super.takeDamage(from);
+        freezeScore();
       }
       this.body.tint = 0xff3333;
     }
@@ -246,6 +273,11 @@ export class Chungus extends Character {
   public isHugeAndMoving() {
     return this.powerTime > 0 && this.scale.y > 2
         && (this.dx !== 0 || this.dy !== 0);
+  }
+
+  /** @return Whether or not achieved win conditions */
+  public hasWon() {
+    return this.powerTime > POW_TIME_WIN;
   }
 
   /** chungus says something new */
@@ -352,6 +384,7 @@ export class Chungus extends Character {
 
   /** chungus activates the powerup */
   private activatePower() {
+    freezeScore();  // Game is effectively won. No more updating score.
     this.powerTime = 1;
     // Replace the body texture with the power texture.
     this.body.texture = this.powerTexture;
@@ -368,6 +401,11 @@ export class Chungus extends Character {
     if (i < speeches.length && this.powerTime >= speeches[i].delay) {
       this.say(speeches[i].text, speeches[i].speed);
       this.speechIndex++;
+
+      // Also heal health
+      if (this.healthBar.isBelowMaxhealth()) {
+        this.healthBar.addHealth(1);
+      }
     }
 
     // Start growing after a delay

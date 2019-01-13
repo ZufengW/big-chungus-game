@@ -29,6 +29,11 @@ export class Bullet extends MovingContainer implements IRespawnable {
     return !this.isActive;
   }
 
+  public deactivate() {
+    this.isActive = false;
+    this.visible = false;
+  }
+
   /**
    * Bullets don't change direction. They only decrease in lifetime.
    * @param delta frame time
@@ -39,9 +44,8 @@ export class Bullet extends MovingContainer implements IRespawnable {
     // update life
     this.lifeRemaining -= delta;
     if (this.lifeRemaining <= 0) {
-      // deactivate the bullet
-      this.isActive = false;
-      this.visible = false;
+      // Ran out of life. Deactivate the bullet
+      this.deactivate();
     }
   }
 }

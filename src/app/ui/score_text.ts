@@ -7,6 +7,9 @@ import {
 let score: number = 0;
 let scoreText: Text;
 
+/** When frozen, score can't change anymore. */
+let scoreFrozen = false;
+
 /** Bonus size when there is a combo */
 let bonusSize = 1;
 /** Countdown before bonus size starts shrinking */
@@ -42,6 +45,9 @@ export function initScoreText(x: number, y: number): Text {
  * @param n amount to add
  */
 export function addScore(n: number) {
+  if (scoreFrozen) {
+    return;
+  }
   score += n;
   scoreText.rotation = Math.random() - 0.5;
   scoreText.text = String(score);
@@ -51,7 +57,11 @@ export function addScore(n: number) {
   bonusSizeShrinkDelay = SHRINK_DELAY;
 }
 
+/** score shrinks over time */
 export function updateScoreText(delta: number) {
+  if (scoreFrozen) {
+    return;
+  }
   bonusSizeShrinkDelay -= delta;
   if (bonusSizeShrinkDelay <= 0) {
     // Bonus size shrinks
@@ -66,8 +76,15 @@ export function resetScore() {
   score = 0;
   bonusSize = 1;
   scoreText.text = '0';
+  bonusSizeShrinkDelay = 0;
+  scoreFrozen = false;
 }
 
 export function getScore() {
   return score;
+}
+
+/** Prevent the score from changing until next resetScore */
+export function freezeScore() {
+  scoreFrozen = true;
 }
