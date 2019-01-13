@@ -247,16 +247,17 @@ function update(delta: number) {
       winLoseUI.setKind(EndingType.Win);
       winLoseUI.visible = true;
     }
-  }
 
-  // Spawn new enemies now and then
-  const movers = updateWave(delta);
-  for (const c of movers) {
-    zStage.addChild(c);
-    const [x, y] = randPosAwayFrom(
-      80, 440, chungus.position, MIN_SPAWN_DISTANCE_SQUARED,
-    );
-    c.position.set(x, y);
+    // Spawn new enemies now and then
+    // Stop spawning after the game ends (winLoseUI is visible)
+    const movers = updateWave(delta);
+    for (const c of movers) {
+      zStage.addChild(c);
+      const [x, y] = randPosAwayFrom(
+        80, 440, chungus.position, MIN_SPAWN_DISTANCE_SQUARED,
+      );
+      c.position.set(x, y);
+    }
   }
 
   // Update everything
