@@ -141,19 +141,23 @@ const carrotFactory: Factory<Carrot> = new Factory(
 
 /** callback function for when the carrot has finished being picked up */
 function carrotPickedUp(carrot: Carrot) {
-  if (carrot === powerCarrot) {
-    // power up effect
-    healthBar.powerUp();
-    chungus.powerUp();
-    // Remove the reference because the factory will reuse this carrot.
-    powerCarrot = null;
-  } else if (healthBar.getHealth() > 0) {
-    if (healthBar.getHealth() < healthBar.getMaxHealth()) {
+  if (healthBar.getHealth() > 0) {
+    if (carrot === powerCarrot) {
+      // power up effect
+      healthBar.powerUp();
+      chungus.powerUp();
+      // Remove the reference because the factory will reuse this carrot.
+      powerCarrot = null;
+    } else if (healthBar.getHealth() < healthBar.getMaxHealth()) {
+      // Normal carrot and chungus is below max health. Heal.
       healthBar.addHealth(1);
     } else {
       // Actually on maxHealth now. Don't need it anymore.
       carrot.cancelPickUp();
     }
+  } else {
+    // No health. Cannot finish picking up.
+    carrot.cancelPickUp();
   }
 }
 
