@@ -22,6 +22,7 @@ import * as R from '../resources';
 import {
   addScore, initScoreText, updateScoreText,
 } from '../ui/score_text';
+import { Kind as EndingType, WinLoseUI } from '../ui/winLose';
 import { installWaves, updateWave } from '../waves';
 import { ISceneType } from './scene';
 
@@ -58,6 +59,7 @@ const zStage = new Container();
 
 // UI
 let scoreText: Text;
+const winLoseUI = new WinLoseUI();
 
 // Wall boundaries of the map
 export const DUNGEON_MIN_X = 32;
@@ -181,6 +183,14 @@ export function create(): ISceneType {
   // Add healthBar to stage later so it is drawn on top
   sceneStage.addChild(healthBar);
 
+  // Add UI
+  winLoseUI.visible = false;
+  sceneStage.addChild(winLoseUI);
+  winLoseUI.position.set(
+      APP_WIDTH_HALF - winLoseUI.width / 2,
+      sceneStage.height / 2,
+  );
+
   const scene: ISceneType = {
     sceneContainer: sceneStage,
     // restart,
@@ -197,8 +207,18 @@ export function create(): ISceneType {
  * @param delta frame time difference
  */
 function update(delta: number) {
-  // Spawn new enemies now and then
+  // Check if game ended by lose or win conditions being met
+  if (winLoseUI.visible === false) {
+    if (!chungus.isActive() && healthBar.getHealth() <= 0) {
+      winLoseUI.setKind(EndingType.Lose);
+      winLoseUI.visible = true;
+    } else if (chungus.hasWon()) {
+      winLoseUI.setKind(EndingType.Win);
+      winLoseUI.visible = true;
+    }
+  }
 
+  // Spawn new enemies now and then
   const movers = updateWave(delta);
   for (const c of movers) {
     zStage.addChild(c);

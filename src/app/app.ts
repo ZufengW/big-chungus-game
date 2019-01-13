@@ -125,7 +125,14 @@ function switchScene(newScene: ISceneType) {
 
 /** Begins the play scene */
 export function startPlayScene() {
-  if (currentScene === titleScene) {
+  if (currentScene !== playScene) {
     switchScene(playScene);
+  }
+}
+
+/** Switch to the title scene */
+export function startTitleScene() {
+  if (currentScene !== titleScene) {
+    switchScene(titleScene);
   }
 }

@@ -16,6 +16,8 @@ const SCALE_GROW_SPEED = 0.01;
 const MAX_POW_SCALE = 3.1;
 /** How long (frames) between chungus activating power and beginning to grow */
 const POW_TIME_BEFORE_GROW = 60 * 7;
+/** Delay between activating power and win conditions considered met */
+const POW_TIME_WIN = 60 * 15;
 
 /** Things chungus says. delay is after what delay */
 const speeches = [
@@ -246,6 +248,11 @@ export class Chungus extends Character {
   public isHugeAndMoving() {
     return this.powerTime > 0 && this.scale.y > 2
         && (this.dx !== 0 || this.dy !== 0);
+  }
+
+  /** @return Whether or not achieved win conditions */
+  public hasWon() {
+    return this.powerTime > POW_TIME_WIN;
   }
 
   /** chungus says something new */
