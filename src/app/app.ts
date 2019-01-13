@@ -111,3 +111,21 @@ function gameLoop(delta: number) {
   // Update the current game state
   gameState(delta);
 }
+
+/** Change from one scene to another */
+function switchScene(newScene: ISceneType) {
+  // TODO: call preparation functions
+  app.stage.removeChildren();
+  currentScene.sceneContainer.visible = false;  // Might not need this
+  newScene.sceneContainer.visible = true;
+  app.stage.addChild(newScene.sceneContainer);
+  currentScene = newScene;
+  gameState = currentScene.update;
+}
+
+/** Begins the play scene */
+export function startPlayScene() {
+  if (currentScene === titleScene) {
+    switchScene(playScene);
+  }
+}

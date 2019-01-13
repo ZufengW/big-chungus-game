@@ -1,4 +1,4 @@
-import { APP_WIDTH, APP_WIDTH_HALF, interaction } from '../app';
+import { APP_WIDTH, APP_WIDTH_HALF, interaction, startPlayScene } from '../app';
 import { Boulder } from '../containers/boulder';
 import { Chungus } from '../containers/chungus';
 import { HealthBar } from '../containers/health_bar';
@@ -90,7 +90,7 @@ export function create(): ISceneType {
   sceneStage.addChild(textMessage);
 
   // Create a button
-  const playButton = new Button('Play', () => { console.log('clicked'); });
+  const playButton = new Button('Play', startPlayScene);
   playButton.position.set(APP_WIDTH_HALF - playButton.width / 2, DUNGEON_MAX_Y);
   sceneStage.addChild(playButton);
 
