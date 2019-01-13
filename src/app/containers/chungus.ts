@@ -3,6 +3,7 @@ import { setupMoveKeys } from '../input';
 import {
   Graphics, Point, Texture,
 } from '../pixi_alias';
+import { freezeScore } from '../ui/score_text';
 import { SpeechBubble } from '../ui/speech';
 import { Character } from './character';
 import { HealthBar } from './health_bar';
@@ -201,6 +202,7 @@ export class Chungus extends Character {
           return;
         }
         super.takeDamage(from);
+        freezeScore();
       }
       this.body.tint = 0xff3333;
     }
@@ -382,6 +384,7 @@ export class Chungus extends Character {
 
   /** chungus activates the powerup */
   private activatePower() {
+    freezeScore();  // Game is effectively won. No more updating score.
     this.powerTime = 1;
     // Replace the body texture with the power texture.
     this.body.texture = this.powerTexture;

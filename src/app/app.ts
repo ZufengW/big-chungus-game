@@ -134,14 +134,14 @@ function switchScene(newScene: ISceneType, restart = false) {
   gameState = currentScene.update;
 }
 
-/** Begins the play scene */
+/** Switches to and restarts the play scene */
 export function startPlayScene() {
   if (currentScene !== playScene) {
-    switchScene(playScene);
+    switchScene(playScene, true);
   }
 }
 
-/** Switch to the title scene */
+/** Switch to the title scene. Don't restart. */
 export function startTitleScene() {
   if (currentScene !== titleScene) {
     switchScene(titleScene);
