@@ -108,6 +108,11 @@ function setup() {
  * @param delta frame time
  */
 function gameLoop(delta: number) {
+  // Cap delta to prevent accumulating to high values
+  if (delta > 1.1) {
+    delta = 1.1;
+  }
+
   // Update the current game state
   gameState(delta);
 }
