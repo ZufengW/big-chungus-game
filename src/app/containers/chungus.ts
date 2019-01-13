@@ -7,6 +7,13 @@ import { Character } from './character';
 import { HealthBar } from './health_bar';
 import { MovingContainer } from './moving_container';
 
+const STARTING_SCALE = 0.6;
+/** powerTexture dimensions multiplied by this should be similar to texture */
+const NEW_BODY_SCALE = 0.5;
+const SCALE_GROW_SPEED = 0.01;
+/** maximum scale for chungus when fully grown */
+const MAX_POW_SCALE = 3.1;
+
 const MOVE_SPEED = 4;
 /** How much chungus waddles */
 const WADDLE_AMOUNT = 0.07;
@@ -43,14 +50,27 @@ export class Chungus extends Character {
   /** For the waddle animation. */
   private waddleState = 0;
   private waddleDirection = 1;
+  /** Whether or not have access to the powered up state */
+  private isPoweredUp = false;
+  /** How long the power up state has been active for */
+  private powerTime = 0;
+  private powerTexture: Texture;
 
   private getInput: () => [number, number];
 
-  constructor(texture: Texture, healthBar: HealthBar) {
+  /**
+   * Create a new chungus
+   * @param texture body texture
+   * @param healthBar chungus health
+   * @param powerTexture body texture after activating powerup.
+   *    Should be twice the size of texture.
+   */
+  constructor(texture: Texture, healthBar: HealthBar, powerTexture: Texture) {
     super(texture);
+    this.powerTexture = powerTexture;
 
     // make smaller
-    this.setScale(0.6);
+    this.setScale(STARTING_SCALE);
 
     // TODO: revise use of setup functions here. Maybe move out
     this.getInput = setupMoveKeys();
@@ -91,10 +111,13 @@ export class Chungus extends Character {
           break;
       }
       // Flip body depending on x velocity
-      if (this.dx < 0) {
-        this.body.scale.x = -1;
-      } else if (this.dx !== 0) {  // this.dx > 0
-        this.body.scale.x = 1;
+      if ((this.dx < 0 && this.body.scale.x > 0)
+          || (this.dx > 0 && this.body.scale.x < 0)) {
+        this.body.scale.x *= -1;
+      }
+      // powered up?
+      if (this.powerTime > 0) {
+        this.updatePower(delta);
       }
     }
   }
@@ -103,8 +126,9 @@ export class Chungus extends Character {
    * Use this to save on collision checking.
    */
   public isVulnerable() {
-    // Chungus is invulnerable while dashing and hurt.
-    return super.isActive() && this.activeState === ActiveState.Walking;
+    // Chungus is invulnerable while dashing or hurt or powered up.
+    return super.isActive() && this.activeState === ActiveState.Walking
+        && this.powerTime === 0;
   }
 
   /**
@@ -114,9 +138,21 @@ export class Chungus extends Character {
    *  Default true.
    */
   public takeDamage(from?: MovingContainer, hurt = true): void {
+    if (this.powerTime > 0) {
+      return;  // invulnerable
+    }
     if (hurt) {
       this.healthBar.addHealth(-1);
       if (this.healthBar.getHealth() <= 0) {
+        // 0 health. Either activate power up if have it, or lose.
+        if (this.isPoweredUp) {
+          this.powerTime = 1;
+          // Replace the body texture with the power texture.
+          this.body.texture = this.powerTexture;
+          // Scale down the body so that the new texture is same size as old
+          this.body.scale.set(NEW_BODY_SCALE);
+          return;
+        }
         super.takeDamage(from);
       }
       this.body.tint = 0xff3333;
@@ -175,6 +211,19 @@ export class Chungus extends Character {
   /** Whether or not chungus is dashing */
   public isDashing(): boolean {
     return this.activeState === ActiveState.Dashing;
+  }
+
+  /** Powers up the chungus */
+  public powerUp() {
+    this.isPoweredUp = true;
+    // Power will activate when health drops to 0
+    this.powerTime = 0;
+  }
+
+  /** @return whether or not chungus is humongous and moving */
+  public isHugeAndMoving() {
+    return this.powerTime > 0 && this.scale.y > 2
+        && (this.dx !== 0 || this.dy !== 0);
   }
 
   /** update during Walking state */
@@ -266,6 +315,16 @@ export class Chungus extends Character {
       }
       this.waddleState += 0.01 * this.waddleDirection;
     }
+  }
+
+  /** when powered up */
+  private updatePower(delta: number) {
+    this.powerTime += delta;
+    const nextScale = Math.min(
+        STARTING_SCALE + this.powerTime * SCALE_GROW_SPEED,
+        MAX_POW_SCALE,
+    );
+    this.setScale(nextScale);
   }
 
   /** Reset dash variables */

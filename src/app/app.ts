@@ -83,6 +83,7 @@ const TAZ_ARM_PATH = './assets/taz-arm-sm.png';
 const TAZ_EYES_RED_PATH = './assets/taz-eyes-red-sm.png';
 const BOULDER_PATH = './assets/boulder.png';
 const CARROT_PATH = './assets/carrot.png';
+const CHUNGUS_POWER_PATH = './assets/big-chungus-sm-glow.png';
 
 // Load the assets
 loader
@@ -97,6 +98,7 @@ loader
   .add(BULLET_PATH)
   .add(BOULDER_PATH)
   .add(CARROT_PATH)
+  .add(CHUNGUS_POWER_PATH)
   .on('progress', loadProgressHandler)
   .load(setup);
 
@@ -142,6 +144,7 @@ function carrotPickedUp(carrot: Carrot) {
   if (carrot === powerCarrot) {
     // power up effect
     healthBar.powerUp();
+    chungus.powerUp();
     // Remove the reference because the factory will reuse this carrot.
     powerCarrot = null;
   } else if (healthBar.getHealth() > 0) {
@@ -200,7 +203,7 @@ function setup() {
   healthBar.pivot.set(0, healthBar.height / 2);
   healthBar.position.set(60, 60);
 
-  chungus = new Chungus(resources[CHUNGUS_PATH].texture, healthBar);
+  chungus = new Chungus(resources[CHUNGUS_PATH].texture, healthBar, resources[CHUNGUS_POWER_PATH].texture);
   chungus.position.set(100, app.stage.height / 2);
   zStage.addChild(chungus);
 
@@ -362,8 +365,8 @@ function play(delta: number) {
     DUNGEON_MIN_Y, DUNGEON_MAX_Y,
   );
 
-  // chungus can damage enemies when dashing
-  if (chungus.isDashing()) {
+  // chungus can damage enemies when dashing or when really big
+  if (chungus.isDashing() || chungus.isHugeAndMoving()) {
     elmerFactory.forEach((elmer) => {
       if (elmer.isActive() && chungus.collision(elmer)) {
         elmer.takeDamage(chungus);
@@ -411,8 +414,9 @@ function play(delta: number) {
   // Center the screen on Chungus. Round to integer avoid blurring.
   // Note that changing the map's position also changes chungus's global pos.
   const globalChungusPos = chungus.getGlobalPosition();
+  const chungusOffset = chungus.scale.y * 40;
   map.x += APP_WIDTH_HALF - Math.round(globalChungusPos.x);
-  map.y += APP_WIDTH_HALF - Math.round(globalChungusPos.y);
+  map.y += APP_WIDTH_HALF - Math.round(globalChungusPos.y) + chungusOffset;
 
   // Update layer order
   updateLayersOrder();
