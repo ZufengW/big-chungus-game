@@ -206,6 +206,8 @@ function setup() {
   chungus = new Chungus(resources[CHUNGUS_PATH].texture, healthBar, resources[CHUNGUS_POWER_PATH].texture);
   chungus.position.set(100, app.stage.height / 2);
   zStage.addChild(chungus);
+  // Chungus says something upon entering
+  chungus.say('What a fine day.');
 
   treasure = new Treasure(id['treasure.png']);
   // Position the treasure next to the right edge of the canvas
@@ -241,6 +243,9 @@ function setup() {
   /** Set up waves and install the wave text */
   const waveText = installWaves(elmerFactory, tazFactory, {
     beginWaveCallback: (waveNum) => {
+      if (waveNum === 1) {
+        chungus.say('!!!!!!!!!!');
+      }
       // Initialise the boulder at the end of wave 5
       if (waveNum === 5) {
         boulder = new Boulder(resources[BOULDER_PATH].texture);

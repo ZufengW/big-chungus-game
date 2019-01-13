@@ -3,6 +3,7 @@ import { setupMoveKeys } from '../input';
 import {
   Graphics, Point, Texture,
 } from '../pixi_alias';
+import { SpeechBubble } from '../ui/speech';
 import { Character } from './character';
 import { HealthBar } from './health_bar';
 import { MovingContainer } from './moving_container';
@@ -56,6 +57,8 @@ export class Chungus extends Character {
   private powerTime = 0;
   private powerTexture: Texture;
 
+  private speechBubble: SpeechBubble;
+
   private getInput: () => [number, number];
 
   /**
@@ -92,10 +95,16 @@ export class Chungus extends Character {
     triangle.y = this.body.height;
     this.dashAim = triangle;
     this.resetDash();
+    // Position the speech bubble
+    this.speechBubble = new SpeechBubble();
+    // this.speechBubble.position.set(100, 100);
+    this.addChild(this.speechBubble);
   }
 
   public update(delta: number): void {
     super.update(delta);
+    this.speechBubble.update(delta);
+
     if (super.isActive()) {
       switch (this.activeState) {
         case ActiveState.Walking:
@@ -224,6 +233,16 @@ export class Chungus extends Character {
   public isHugeAndMoving() {
     return this.powerTime > 0 && this.scale.y > 2
         && (this.dx !== 0 || this.dy !== 0);
+  }
+
+  public say(text: string) {
+    this.speechBubble.say(text);
+  }
+
+  /** In addition, move the text upwards when chungus goes up  */
+  public postUpdate(delta: number) {
+    super.postUpdate(delta);
+    this.speechBubble.position.y = -this.getZ();
   }
 
   /** update during Walking state */

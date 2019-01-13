@@ -31,8 +31,8 @@ const TIME_BETWEEN_SPAWNS_INCREASE = 2;
 
 /** Rest period between waves (frames) */
 const WAVE_REST_PERIOD = 60;
-/** amount of rest remaining */
-let restTimeRemaining = WAVE_REST_PERIOD;
+/** Current amount of rest time remaining before next wave begins */
+let restTimeRemaining = WAVE_REST_PERIOD * 3;
 
 let elmerFactory: Factory<Elmer>;
 let tazFactory: Factory<Taz>;
