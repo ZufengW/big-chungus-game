@@ -73,6 +73,11 @@ export class HealthBar extends Container {
     return this.maxHealth;
   }
 
+  /** @return whether or not current health is below max health */
+  public isBelowMaxhealth() {
+    return this.health < this.maxHealth;
+  }
+
   /** Make this health bar powered up
    * Add another health segment and start a shockwave effect.
    */

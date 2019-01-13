@@ -368,6 +368,11 @@ export class Chungus extends Character {
     if (i < speeches.length && this.powerTime >= speeches[i].delay) {
       this.say(speeches[i].text, speeches[i].speed);
       this.speechIndex++;
+
+      // Also heal health
+      if (this.healthBar.isBelowMaxhealth()) {
+        this.healthBar.addHealth(1);
+      }
     }
 
     // Start growing after a delay

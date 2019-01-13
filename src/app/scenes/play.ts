@@ -265,7 +265,7 @@ function update(delta: number) {
       if (carrot === powerCarrot
           && carrot.canPickUp() && carrot.collision(chungus)) {
         carrot.pickUp(chungus);
-      } else if (healthBar.getHealth() < healthBar.getMaxHealth()
+      } else if (healthBar.isBelowMaxhealth()
           && carrot.canPickUp() && carrot.collision(chungus)) {
         carrot.pickUp(chungus);
       }
@@ -359,7 +359,7 @@ function carrotPickedUp(carrot: Carrot) {
       chungus.powerUp();
       // Remove the reference because the factory will reuse this carrot.
       powerCarrot = null;
-    } else if (healthBar.getHealth() < healthBar.getMaxHealth()) {
+    } else if (healthBar.isBelowMaxhealth()) {
       // Normal carrot and chungus is below max health. Heal.
       healthBar.addHealth(1);
     } else {
