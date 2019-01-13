@@ -67,7 +67,7 @@ export class HealthBar extends Container {
 
   public update(delta: number) {
     // Update the shockwave filter
-    if (this.shockwaveFilter && this.shockwaveFilter.time < 120) {
+    if (this.filters.length > 0 && this.shockwaveFilter.time < 120) {
       this.shockwaveFilter.time += delta;
     }
   }
