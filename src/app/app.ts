@@ -350,12 +350,14 @@ function play(delta: number) {
   // chungus can pick up carrots when below max health
   carrotFactory.forEach((carrot) => {
     carrot.postUpdate(delta);
-    if (carrot === powerCarrot
-        && carrot.canPickUp() && carrot.collision(chungus)) {
-      carrot.pickUp(chungus);
-    } else if (healthBar.getHealth() < healthBar.getMaxHealth()
-        && carrot.canPickUp() && carrot.collision(chungus)) {
-      carrot.pickUp(chungus);
+    if (chungus.isActive()) {
+      if (carrot === powerCarrot
+          && carrot.canPickUp() && carrot.collision(chungus)) {
+        carrot.pickUp(chungus);
+      } else if (healthBar.getHealth() < healthBar.getMaxHealth()
+          && carrot.canPickUp() && carrot.collision(chungus)) {
+        carrot.pickUp(chungus);
+      }
     }
   });
 
