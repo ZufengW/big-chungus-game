@@ -1,9 +1,11 @@
 import './../styles/app.css';
+import { FloatingJoystick } from './input';
 import {
   Application,
   Container,
   InteractionManager,
   loader,
+  Rectangle,
   utils,
 } from './pixi_alias';
 import * as R from './resources';

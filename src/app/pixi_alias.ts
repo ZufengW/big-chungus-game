@@ -18,6 +18,8 @@ export class ZContainer extends Container {
   }
 }
 import Graphics = PIXI.Graphics;
+import InteractionData = PIXI.interaction.InteractionData;
+import InteractionEvent = PIXI.interaction.InteractionEvent;
 import InteractionManager = PIXI.interaction.InteractionManager;
 import loader = PIXI.loader;
 import Point = PIXI.Point;
@@ -34,6 +36,8 @@ export {
   Container,
   Filters,
   Graphics,
+  InteractionData,
+  InteractionEvent,
   InteractionManager,
   loader,
   Point,

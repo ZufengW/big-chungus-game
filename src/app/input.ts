@@ -1,4 +1,7 @@
-import { normalise } from './helpers';
+import { lengthSquared, normalise, pointTo } from './helpers';
+import {
+  Container, Graphics, InteractionData, InteractionEvent, Rectangle,
+} from './pixi_alias';
 
 /**
  * For getting user input.
@@ -106,4 +109,124 @@ function keyboard(value: string) {
   };
 
   return key;
+}
+
+/** Radius of outer circle (joystick base) */
+const OUTER_RADIUS = 100;
+const INNER_RADIUS = 40;
+
+// max distance of joystick from middle
+const JOYSTICK_DIST = 80;
+const JOYSTICK_DIST_SQUARED = JOYSTICK_DIST ** 2;
+
+export class FloatingJoystick extends Container {
+
+  /** the base of the joystick */
+  private outerCircle: Graphics;
+  /** The joystick */
+  private innerCircle: Graphics;
+
+  /** Whether or not the joystick is being dragged (pointer is down) */
+  private dragging = false;
+  private eventData: InteractionData;
+
+  /**
+   * Create a new floating joystick
+   * @param hitArea boundary rectangle of the floating joystick
+   */
+  constructor(hitArea: Rectangle) {
+    super();
+
+    this.interactive = true;
+    /** The rectangle that can be hit */
+    this.hitArea = hitArea;
+
+    // Outer circle: joystick base
+    const outerCircle = new Graphics();
+    outerCircle.beginFill(0xffffff);
+    outerCircle.drawCircle(0, 0, OUTER_RADIUS);
+    outerCircle.endFill();
+    outerCircle.alpha = 0.2;
+
+    this.addChild(outerCircle);
+    this.outerCircle = outerCircle;
+
+    // Inner circle: joystick top
+    const innerCircle = new Graphics();
+    innerCircle.beginFill(0xffffff);
+    innerCircle.drawCircle(0, 0, INNER_RADIUS);
+    innerCircle.endFill();
+    innerCircle.alpha = 0.5;
+
+    this.addChild(innerCircle);
+    this.innerCircle = innerCircle;
+
+    // For both mouse and touch events
+    // this.on('pointerdown', this.onStart)
+    //     .on('pointermove', this.onMove)
+    //     .on('pointerup', this.onEnd);
+
+    // For touch-only events
+    this.on('touchstart', this.onStart)
+        .on('touchmove', this.onMove)
+        .on('touchend', this.onEnd)
+        .on('touchendoutside', this.onEnd)
+        .on('touchcancel', this.onEnd);
+    // console.log('new touch', this.width, this.height, this.hitArea);
+
+    this.innerCircle.visible = false;
+    this.outerCircle.visible = false;
+  }
+
+  /** @return the coordinate from joystick base to joystick top,
+   * or null if not active.
+   */
+  public getDiff(): [number, number] | null {
+    if (this.dragging) {
+      return [
+          this.innerCircle.x - this.outerCircle.x,
+          this.innerCircle.y - this.outerCircle.y,
+      ];
+    }
+    return null;
+  }
+
+  /** When touch starts, move the entire joystick here */
+  private onStart(event: InteractionEvent) {
+    const startPos = event.data.getLocalPosition(this.parent);
+    // Store a reference to the data so we can track the movement of this
+    // particular touch. (For multi-touch)
+    this.eventData = event.data;
+    this.innerCircle.visible = true;
+    this.outerCircle.visible = true;
+    this.outerCircle.position = startPos;
+    this.innerCircle.position = startPos;
+    this.dragging = true;
+  }
+
+  /** When touch moves, keep the outer in place, but move inner towards pos */
+  private onMove() {
+    if (this.dragging) {
+      const currPos = this.eventData.getLocalPosition(this.parent);
+      const [xDiff, yDiff] = pointTo(this.outerCircle.position, currPos);
+      if (lengthSquared([xDiff, yDiff]) > JOYSTICK_DIST_SQUARED) {
+        // Limit ...
+        const [x, y] = normalise([xDiff, yDiff]);
+        this.innerCircle.position.set(
+            x * JOYSTICK_DIST + this.outerCircle.position.x,
+            y * JOYSTICK_DIST + this.outerCircle.position.y,
+        );
+      } else {
+        this.innerCircle.position = currPos;
+      }
+    }
+  }
+
+  private onEnd() {
+    // hide visibility of joystick
+    this.innerCircle.visible = false;
+    this.outerCircle.visible = false;
+    this.dragging = false;
+    this.eventData = null;
+  }
 }

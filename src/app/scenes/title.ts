@@ -2,10 +2,12 @@ import { APP_WIDTH, APP_WIDTH_HALF, interaction, startPlayScene } from '../app';
 import { Boulder } from '../containers/boulder';
 import { Chungus } from '../containers/chungus';
 import { HealthBar } from '../containers/health_bar';
+import { FloatingJoystick } from '../input';
 import {
   Container,
   loader,
   Point,
+  Rectangle,
   Sprite,
   Text,
   TextStyle,
@@ -88,6 +90,15 @@ export function create(): ISceneType {
   textMessage.anchor.set(0.5, 0.5);
   textMessage.position.set(APP_WIDTH_HALF, 150);
   sceneStage.addChild(textMessage);
+
+  // Create controls
+  sceneStage.interactive = true;
+  const rectLeft = new Rectangle(0, 0, APP_WIDTH_HALF, APP_WIDTH);
+  const joystickLeft = new FloatingJoystick(rectLeft);
+  sceneStage.addChild(joystickLeft);
+  const rectRight = new Rectangle(APP_WIDTH_HALF, 0, APP_WIDTH_HALF, APP_WIDTH);
+  const joystickRight = new FloatingJoystick(rectRight);
+  sceneStage.addChild(joystickRight);
 
   // Create a button
   const playButton = new Button('Play', startPlayScene);
