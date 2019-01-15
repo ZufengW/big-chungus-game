@@ -433,7 +433,7 @@ function carrotPickedUp(carrot: Carrot) {
 function checkMouse(): void {
   // If mouse down, stop charging dash.
   if (interaction.mouse.buttons !== 0) {
-    chungus.stopChargingDash();
+    chungus.attemptDash();
   }
   // this is actually reassigning to itself...
   stageMousePos = interaction.mouse.getLocalPosition(map, stageMousePos);

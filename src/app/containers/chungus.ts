@@ -242,10 +242,10 @@ export class Chungus extends Character {
   }
 
   /**
-   * Attempt to finish charging dash, and begin Dashing.
+   * Attempt to (finish charging and) begin Dashing.
    * Will continue to charge if minimum charge time not achieved yet.
    */
-  public stopChargingDash() {
+  public attemptDash() {
     // Don't do anything if already not charging, or not charged enough
     // or in the middle of dashing
     if (this.activeState !== ActiveState.Walking

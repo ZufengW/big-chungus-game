@@ -102,19 +102,18 @@ export function create(): ISceneType {
   sceneStage.addChild(textMessage);
 
   // Create controls
-  sceneStage.interactive = true;
   const rectLeft = new Rectangle(0, 0, APP_WIDTH_HALF, APP_WIDTH);
   joystickLeft = new FloatingJoystick(rectLeft);
   sceneStage.addChild(joystickLeft);
   const rectRight = new Rectangle(APP_WIDTH_HALF, 0, APP_WIDTH_HALF, APP_WIDTH);
   joystickRight = new FloatingJoystick(rectRight, {
-    onEndCallback: () => {chungus.stopChargingDash(); },
+    onEndCallback: () => {chungus.attemptDash(); },
   });
   sceneStage.addChild(joystickRight);
 
   getKeyboardMoveInput = setupMoveKeys();
 
-  // Create a button
+  // Create a button. Needs to be after the joysticks to be on top.
   const playButton = new Button('Play', startPlayScene);
   playButton.position.set(APP_WIDTH_HALF - playButton.width / 2, DUNGEON_MAX_Y);
   sceneStage.addChild(playButton);
@@ -154,9 +153,9 @@ function update(delta: number) {
       mapDashDestPos.x - chungus.x,
       mapDashDestPos.y - chungus.y,
     );
-    // If mouse down, stop charging dash.
+    // If mouse down, attempt to dash.
     if (interaction.mouse.buttons !== 0) {
-      chungus.stopChargingDash();
+      chungus.attemptDash();
     }
   }
 
@@ -197,11 +196,3 @@ function update(delta: number) {
 
   updateLayersOrder(map);
 }
-
-/** Checks whether or not chungus is trying to dash.
- * Check touch input, with fallback to mouse input
- */
-// function checkDash(): void {
-//   // If mouse down, stop charging dash.
-
-// }
