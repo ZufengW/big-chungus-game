@@ -1,5 +1,4 @@
 import { angleBetweenPoints, normalise, rgb } from '../helpers';
-import { setupMoveKeys } from '../input';
 import {
   Graphics, Point, Texture,
 } from '../pixi_alias';

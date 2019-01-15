@@ -2,7 +2,7 @@ import { APP_WIDTH, APP_WIDTH_HALF, interaction, startPlayScene } from '../app';
 import { Boulder } from '../containers/boulder';
 import { Chungus } from '../containers/chungus';
 import { HealthBar } from '../containers/health_bar';
-import { FloatingJoystick, setupMoveKeys } from '../input';
+import { FloatingJoystick, setupMoveKeys } from '../input/input';
 import {
   Container,
   loader,

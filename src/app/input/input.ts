@@ -1,7 +1,7 @@
-import { lengthSquared, normalise, pointTo } from './helpers';
+import { lengthSquared, normalise, pointTo } from '../helpers';
 import {
   Container, Graphics, InteractionData, InteractionEvent, Point, Rectangle,
-} from './pixi_alias';
+} from '../pixi_alias';
 
 /**
  * For getting user input.
