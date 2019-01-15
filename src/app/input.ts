@@ -137,7 +137,8 @@ export class FloatingJoystick extends Container {
    * Create a new floating joystick
    * @param hitArea boundary rectangle of the floating joystick
    * @param opts more options such as callbacks
-   * * onEndCallback function to call when drag ended
+   * * onEndCallback function to call when drag (that started in the area)
+   *    ends.
    *
    */
   constructor(hitArea: Rectangle, opts?: {
@@ -241,11 +242,13 @@ export class FloatingJoystick extends Container {
     // hide visibility of joystick
     this.innerCircle.visible = false;
     this.outerCircle.visible = false;
-    this.dragging = false;
-    this.eventData = null;
-    if (this.onEndCallback) {
+    // Need to check this.dragging because otherwise will also trigger if start
+    // drag from outside this joystick but end inside.
+    if (this.onEndCallback && this.dragging) {
       this.onEndCallback();
     }
+    this.dragging = false;
+    this.eventData = null;
   }
 
   /** Set the position of the inner circle */
