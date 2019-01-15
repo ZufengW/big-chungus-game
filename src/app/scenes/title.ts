@@ -2,7 +2,7 @@ import { APP_WIDTH, APP_WIDTH_HALF, interaction, startPlayScene } from '../app';
 import { Boulder } from '../containers/boulder';
 import { Chungus } from '../containers/chungus';
 import { HealthBar } from '../containers/health_bar';
-import { FloatingJoystick } from '../input';
+import { FloatingJoystick, setupMoveKeys } from '../input';
 import {
   Container,
   loader,
@@ -46,8 +46,18 @@ let chungus: Chungus;  // the player
 let healthBar: HealthBar;  // player's health bar
 let boulder: Boulder;
 let map: Sprite;
-/** mouse position in stage coordinates */
-let stageMousePos: Point = new Point(0, 0);
+
+// User input
+/** mouse position in stage coordinates, for dashing */
+let mapDashDestPos: Point = new Point(0, 0);
+/** record the most recent joystickRight non-zero input
+ * Begin on [1, 0] due to default dash aim angle
+ */
+const prevJoystickRightDiff = [1, 0];
+// for moving
+let joystickLeft: FloatingJoystick;
+let joystickRight: FloatingJoystick;
+let getKeyboardMoveInput: () => [number, number];
 
 /** Create the stage */
 export function create(): ISceneType {
@@ -94,11 +104,15 @@ export function create(): ISceneType {
   // Create controls
   sceneStage.interactive = true;
   const rectLeft = new Rectangle(0, 0, APP_WIDTH_HALF, APP_WIDTH);
-  const joystickLeft = new FloatingJoystick(rectLeft);
+  joystickLeft = new FloatingJoystick(rectLeft);
   sceneStage.addChild(joystickLeft);
   const rectRight = new Rectangle(APP_WIDTH_HALF, 0, APP_WIDTH_HALF, APP_WIDTH);
-  const joystickRight = new FloatingJoystick(rectRight);
+  joystickRight = new FloatingJoystick(rectRight, {
+    onEndCallback: () => {chungus.stopChargingDash(); },
+  });
   sceneStage.addChild(joystickRight);
+
+  getKeyboardMoveInput = setupMoveKeys();
 
   // Create a button
   const playButton = new Button('Play', startPlayScene);
@@ -122,10 +136,32 @@ function restart() {
 function update(delta: number) {
   sceneTime += delta;
 
+  // Get user input. Try touch with fallback to keyboard.
+  let moveInput = joystickLeft.getDiffNormalised();
+  if (moveInput[0] === 0 && moveInput[1] === 0) {
+    moveInput = getKeyboardMoveInput();
+  }
+  chungus.setMoveInput(moveInput);
+
+  // Set aim position. Use touch with fallback to mouse.
+  if (interaction.supportsTouchEvents) {
+    const aimInput = joystickRight.getDiff();
+    chungus.setDashDest(aimInput[0], aimInput[1]);
+  } else {
+    // No touch events. Fallback to mouse
+    mapDashDestPos = interaction.mouse.getLocalPosition(map, mapDashDestPos);
+    chungus.setDashDest(
+      mapDashDestPos.x - chungus.x,
+      mapDashDestPos.y - chungus.y,
+    );
+    // If mouse down, stop charging dash.
+    if (interaction.mouse.buttons !== 0) {
+      chungus.stopChargingDash();
+    }
+  }
+
   // update everything
   chungus.update(delta);
-  checkMouse();
-  chungus.dashDest = stageMousePos;
   boulder.update(delta);
 
   // postUpdate everything
@@ -162,16 +198,10 @@ function update(delta: number) {
   updateLayersOrder(map);
 }
 
-/**
- * check mouse input
+/** Checks whether or not chungus is trying to dash.
+ * Check touch input, with fallback to mouse input
  */
-function checkMouse(): void {
-  // If mouse down, stop charging dash.
-  if (interaction.mouse.buttons !== 0) {
-    chungus.stopChargingDash();
-  } else {
-    chungus.startChargingDash();
-  }
-  // this is actually reassigning to itself...
-  stageMousePos = interaction.mouse.getLocalPosition(map, stageMousePos);
-}
+// function checkDash(): void {
+//   // If mouse down, stop charging dash.
+
+// }

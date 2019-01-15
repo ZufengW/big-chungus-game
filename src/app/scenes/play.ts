@@ -265,7 +265,7 @@ function update(delta: number) {
   // Update everything
   chungus.update(delta);
   checkMouse();
-  chungus.dashDest = stageMousePos;
+  // chungus.dashDest = stageMousePos;
   if (!boulder.isInactive()) {
     boulder.update(delta);
   }
@@ -434,8 +434,6 @@ function checkMouse(): void {
   // If mouse down, stop charging dash.
   if (interaction.mouse.buttons !== 0) {
     chungus.stopChargingDash();
-  } else {
-    chungus.startChargingDash();
   }
   // this is actually reassigning to itself...
   stageMousePos = interaction.mouse.getLocalPosition(map, stageMousePos);

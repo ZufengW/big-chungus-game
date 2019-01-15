@@ -1,6 +1,6 @@
 import { lengthSquared, normalise, pointTo } from './helpers';
 import {
-  Container, Graphics, InteractionData, InteractionEvent, Rectangle,
+  Container, Graphics, InteractionData, InteractionEvent, Point, Rectangle,
 } from './pixi_alias';
 
 /**
@@ -11,6 +11,7 @@ import {
  * Set up arrow keys for a sprite to move.
  * @param spriteToMove
  * @param speed move speed
+ * @return coordinates with length normalised to 1
  */
 export function setupMoveKeys(): () => [number, number] {
   // Capture the keyboard arrow keys and WASD
@@ -129,17 +130,28 @@ export class FloatingJoystick extends Container {
   /** Whether or not the joystick is being dragged (pointer is down) */
   private dragging = false;
   private eventData: InteractionData;
+  // callbacks
+  private onEndCallback: () => void;
 
   /**
    * Create a new floating joystick
    * @param hitArea boundary rectangle of the floating joystick
+   * @param opts more options such as callbacks
+   * * onEndCallback function to call when drag ended
+   *
    */
-  constructor(hitArea: Rectangle) {
+  constructor(hitArea: Rectangle, opts?: {
+    onEndCallback: () => void,
+  }) {
     super();
 
     this.interactive = true;
     /** The rectangle that can be hit */
     this.hitArea = hitArea;
+    // Apply options
+    if (opts) {
+      this.onEndCallback = opts.onEndCallback;
+    }
 
     // Outer circle: joystick base
     const outerCircle = new Graphics();
@@ -179,19 +191,32 @@ export class FloatingJoystick extends Container {
   }
 
   /** @return the coordinate from joystick base to joystick top,
-   * or null if not active.
+   * or [0, 0] if not active.
    */
-  public getDiff(): [number, number] | null {
+  public getDiff(): [number, number] {
     if (this.dragging) {
       return [
           this.innerCircle.x - this.outerCircle.x,
           this.innerCircle.y - this.outerCircle.y,
       ];
     }
-    return null;
+    return [0, 0];
   }
 
-  /** When touch starts, move the entire joystick here */
+  /** Returns position of joystick relative to base, normalised.
+   * [0, 0] if not active.
+   */
+  public getDiffNormalised(): [number, number] {
+    return normalise(this.getDiff());
+  }
+
+  public isDragging() {
+    return this.dragging;
+  }
+
+  /** When touch starts, move the entire joystick here.
+   * This means the diff becomes [0, 0] until the user moves the joystick.
+   */
   private onStart(event: InteractionEvent) {
     const startPos = event.data.getLocalPosition(this.parent);
     // Store a reference to the data so we can track the movement of this
@@ -208,17 +233,7 @@ export class FloatingJoystick extends Container {
   private onMove() {
     if (this.dragging) {
       const currPos = this.eventData.getLocalPosition(this.parent);
-      const [xDiff, yDiff] = pointTo(this.outerCircle.position, currPos);
-      if (lengthSquared([xDiff, yDiff]) > JOYSTICK_DIST_SQUARED) {
-        // Limit ...
-        const [x, y] = normalise([xDiff, yDiff]);
-        this.innerCircle.position.set(
-            x * JOYSTICK_DIST + this.outerCircle.position.x,
-            y * JOYSTICK_DIST + this.outerCircle.position.y,
-        );
-      } else {
-        this.innerCircle.position = currPos;
-      }
+      this.setJoystickHeadPos(currPos);
     }
   }
 
@@ -228,5 +243,23 @@ export class FloatingJoystick extends Container {
     this.outerCircle.visible = false;
     this.dragging = false;
     this.eventData = null;
+    if (this.onEndCallback) {
+      this.onEndCallback();
+    }
+  }
+
+  /** Set the position of the inner circle */
+  private setJoystickHeadPos(localPos: Point) {
+    const [xDiff, yDiff] = pointTo(this.outerCircle.position, localPos);
+    if (lengthSquared([xDiff, yDiff]) > JOYSTICK_DIST_SQUARED) {
+      // Limit the max distance of the joystick head from the base
+      const [x, y] = normalise([xDiff, yDiff]);
+      this.innerCircle.position.set(
+          x * JOYSTICK_DIST + this.outerCircle.position.x,
+          y * JOYSTICK_DIST + this.outerCircle.position.y,
+      );
+    } else {
+      this.innerCircle.position = localPos;
+    }
   }
 }

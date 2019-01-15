@@ -20,6 +20,8 @@ const POW_TIME_BEFORE_GROW = 60 * 7;
 /** Delay between activating power and win conditions considered met */
 const POW_TIME_WIN = 60 * 15;
 
+const ORIGIN = new Point(0, 0);
+
 /** Things chungus says. delay is after what delay */
 const speeches = [
   {
@@ -56,8 +58,10 @@ enum ActiveState {
 }
 
 export class Chungus extends Character {
-  /** Destination of dash in local coordinates */
-  public dashDest: Point = new Point(0, 0);
+  /** Destination of dash in local coordinates
+   * Relative to chungus's position.
+   */
+  private dashDest: Point = new Point(1, 0);
   /** Also represents whether or not charging a dash */
   private dashChargeTime: number = 0;
   /** visual indicator of dash charging */
@@ -81,7 +85,10 @@ export class Chungus extends Character {
   private speechBubble: SpeechBubble;
   private speechIndex: number = 0;
 
-  private getInput: () => [number, number];
+  /** pair of coordinates. Should be normalised to 1. (or 0, 0 for no move)
+   * Used to decide Chungus's next walking direction.
+   */
+  private moveInput: [number, number] = [0, 0];
 
   /**
    * Create a new chungus
@@ -99,7 +106,7 @@ export class Chungus extends Character {
     this.setScale(STARTING_SCALE);
 
     // TODO: revise use of setup functions here. Maybe move out
-    this.getInput = setupMoveKeys();
+    // this.getInput = setupMoveKeys();
 
     this.healthBar = healthBar;
     // line for aiming the dash
@@ -117,7 +124,7 @@ export class Chungus extends Character {
     triangle.x = this.body.width / 2;
     triangle.y = this.body.height;
     this.dashAim = triangle;
-    this.resetDash();
+    this.finishDashCharging();
     // Position the speech bubble
     this.speechBubble = new SpeechBubble();
     // this.speechBubble.position.set(100, 100);
@@ -130,7 +137,7 @@ export class Chungus extends Character {
     this.activeState = ActiveState.Walking;
     this.setScale(STARTING_SCALE);
     this.healthBar.restart();
-    this.resetDash();
+    this.finishDashCharging();
     this.speechBubble.visible = false;  // deactivate speech bubble
     this.speechIndex = 0;
     this.powerTime = 0;
@@ -142,6 +149,8 @@ export class Chungus extends Character {
     // reset texture
     this.body.texture = this.normalTexture;
     this.body.scale.set(1);
+    this.moveInput = [0, 0];
+    this.dashDest.set(1, 0);
   }
 
   public update(delta: number): void {
@@ -172,6 +181,24 @@ export class Chungus extends Character {
         this.updatePower(delta);
       }
     }
+  }
+
+  /**
+   * Set the dashDest. Coordinates are relative to chungus's position
+   * @param x coordinate
+   * @param y coordinate
+   */
+  public setDashDest(x: number, y: number) {
+    if (x === 0 && y === 0) {
+      return;  // don't want 0
+    }
+    this.dashDest.set(x, y);
+  }
+
+  /** Set chungus's next move. Assume input is valid. */
+  public setMoveInput(coord: [number, number]) {
+    this.moveInput[0] = coord[0];
+    this.moveInput[1] = coord[1];
   }
 
   /** Whether or not taz is vulnerable to damage.
@@ -215,19 +242,6 @@ export class Chungus extends Character {
   }
 
   /**
-   * Attempt to begin charging dash.
-   * Will only work if not already charging or dashing.
-   */
-  public startChargingDash() {
-    // Check if the time is right
-    if (this.dashChargeTime === 0
-        && this.activeState === ActiveState.Walking && super.isActive()) {
-      this.dashChargeTime = 1;
-      this.dashAim.visible = true;
-    }
-  }
-
-  /**
    * Attempt to finish charging dash, and begin Dashing.
    * Will continue to charge if minimum charge time not achieved yet.
    */
@@ -239,22 +253,22 @@ export class Chungus extends Character {
         || this.dashChargeTime < MIN_DASH_CHARGE_TIME) {
       return;
     }
-    // cap the charge
+    // cap the maximum charge
     this.dashChargeTime = Math.min(this.dashChargeTime, MAX_DASH_CHARGE_TIME);
 
     // Calculate dash power
-    const dashPower = this.dashChargeTime / 10;
+    const dashPower = this.dashChargeTime * 0.1;
     this.activeState = ActiveState.Dashing;
 
     const [xDiff, yDiff] = normalise(
-      [this.dashDest.x - this.x, this.dashDest.y - this.y],
+      [this.dashDest.x, this.dashDest.y],
     );
-    // reset xy velocity to dashing
+    // Set xy velocity to dashing velocity.
     this.dx = xDiff * dashPower;
     this.dy = yDiff * dashPower;
     this.dz += dashPower;
     // Reset things
-    this.resetDash();
+    this.finishDashCharging();
   }
 
   /** Whether or not chungus is dashing */
@@ -294,10 +308,14 @@ export class Chungus extends Character {
   /** update during Walking state */
   private updateWalking(delta: number): void {
     // Get user input
-    const [inX, inY] = this.getInput();
+    const [inX, inY] = this.moveInput;
 
-    // Keep charging dash
-    if (this.dashChargeTime > 0) {
+    // Start charging dash if not already
+    if (this.dashChargeTime === 0) {
+      this.dashChargeTime = 1;
+      this.dashAim.visible = true;
+    } else {
+      // Keep charging dash
       this.dashChargeTime += delta;
 
       if (this.dashChargeTime > MAX_DASH_CHARGE_TIME) {
@@ -313,7 +331,7 @@ export class Chungus extends Character {
       }
 
       // Update the aiming line
-      const angle = angleBetweenPoints(this.position, this.dashDest);
+      const angle = angleBetweenPoints(ORIGIN, this.dashDest);
       this.dashAim.rotation = angle;
       this.dashAim.width = this.dashChargeTime;
       /** How far the dash has been charged [0..1] */
@@ -335,24 +353,27 @@ export class Chungus extends Character {
     const dampFactor = CHARGE_XY_DAMP_FACTOR * delta;
     this.dx *= dampFactor;
     this.dy *= dampFactor;
-    // Change back to Walking at end of jump (when on ground again)
-    if (this.dx < MOVE_SPEED && this.dy < MOVE_SPEED && this.getZ() === 0) {
-      this.body.rotation = 0;
-      this.activeState = ActiveState.Walking;
+
+    if (this.getZ() === 0) {
+      if (Math.abs(this.dx) < MOVE_SPEED && Math.abs(this.dy) < MOVE_SPEED) {
+        // Moving slowly and on the ground. Switch back to walking.
+        this.body.rotation = 0;
+        this.activeState = ActiveState.Walking;
+      }
+      return;
     }
-    // Change rotation based on height for kicking effect
+    // When in air, change rotation based on height for kicking effect
     if (this.dx < 0) {
       this.body.rotation = this.getZ() * DASH_BODY_ROTATION_FACTOR;
     } else {
       this.body.rotation = -this.getZ() * DASH_BODY_ROTATION_FACTOR;
     }
-
   }
 
   /** Chungus moves slower while hurt and is affected by knockback. */
   private updateHurt(delta: number): void {
     // Affected by knockback. Less control.
-    const [inX, inY] = this.getInput();
+    const [inX, inY] = this.moveInput;
     this.dx += inX * HURT_MOVE_PENALTY;
     this.dy += inY * HURT_MOVE_PENALTY;
 
@@ -419,8 +440,8 @@ export class Chungus extends Character {
     }
   }
 
-  /** Reset dash variables */
-  private resetDash() {
+  /** Reset dash charging variables */
+  private finishDashCharging() {
     this.dashChargeTime = 0;
     this.dashAim.visible = false;
     this.dashAim.alpha = 0;
