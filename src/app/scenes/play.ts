@@ -9,6 +9,7 @@ import { HealthBar } from '../containers/health_bar';
 import { Taz } from '../containers/taz';
 import { Treasure } from '../containers/treasure';
 import { randPosAwayFrom, randRange } from '../helpers';
+import { PlayerInputManager } from '../input/install';
 import {
   Container,
   Filters,
@@ -75,6 +76,9 @@ Taz.minX = DUNGEON_MIN_X + MAP_BOUNDARY_BUFFER;
 Taz.minY = DUNGEON_MIN_Y + MAP_BOUNDARY_BUFFER;
 Taz.maxX = DUNGEON_MAX_X - MAP_BOUNDARY_BUFFER;
 Taz.maxY = DUNGEON_MAX_Y - MAP_BOUNDARY_BUFFER;
+
+// For user input and controlling chungus
+let playerInputManger: PlayerInputManager;
 
 /**
  * Create the scene
@@ -191,6 +195,9 @@ export function create(): ISceneType {
   // Add healthBar to stage later so it is drawn on top
   sceneStage.addChild(healthBar);
 
+  // Create joystick and keyboard controls
+  playerInputManger = new PlayerInputManager(sceneStage, chungus);
+
   // Add UI
   winLoseUI.visible = false;
   sceneStage.addChild(winLoseUI);
@@ -249,6 +256,9 @@ function update(delta: number) {
       winLoseUI.setKind(EndingType.Win);
       winLoseUI.visible = true;
     }
+
+    // Get and apply user input. Try touch with fallback to keyboard.
+    playerInputManger.update(delta);
 
     // Spawn new enemies now and then
     // Stop spawning after the game ends (winLoseUI is visible)

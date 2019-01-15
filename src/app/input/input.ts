@@ -3,9 +3,26 @@ import {
   Container, Graphics, InteractionData, InteractionEvent, Point, Rectangle,
 } from '../pixi_alias';
 
-/**
- * For getting user input.
+/** Read the state of the directional keys (arrow and WASD)
+ * and add them into one resultant vector.
+ * Stores the singleton.
  */
+let getMoveKeys: () => [number, number];
+
+/**
+ * For getting user input from the keyboard.
+ * Read the state of the directional keys (arrow and WASD),
+ * and add them into one resultant vector.
+ */
+export function getKeyboardMoveInput() {
+  // Use the existing one if there is one
+  if (getMoveKeys) {
+    return getMoveKeys();
+  }
+  // Set up for the first time
+  getMoveKeys = setupMoveKeys();
+  return getMoveKeys();
+}
 
 /**
  * Set up arrow keys for a sprite to move.
@@ -13,7 +30,7 @@ import {
  * @param speed move speed
  * @return coordinates with length normalised to 1
  */
-export function setupMoveKeys(): () => [number, number] {
+function setupMoveKeys(): () => [number, number] {
   // Capture the keyboard arrow keys and WASD
   const left = keyboard('ArrowLeft');
   const up = keyboard('ArrowUp');
