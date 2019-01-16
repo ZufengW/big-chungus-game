@@ -6,8 +6,8 @@ import {
 } from '../pixi_alias';
 
 /** padding between the edges of the button and the text */
-const PADDING_VERTICAL = 8;
-const PADDING_HORIZONTAL = 20;
+const PADDING_VERTICAL = 12;
+const PADDING_HORIZONTAL = 30;
 
 /**
  * Clickable button
