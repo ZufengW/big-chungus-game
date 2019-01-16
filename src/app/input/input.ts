@@ -137,6 +137,7 @@ const INNER_RADIUS = 40;
 const JOYSTICK_DIST = 80;
 const JOYSTICK_DIST_SQUARED = JOYSTICK_DIST ** 2;
 
+/** For user input -- touch control. Can be dragged. */
 export class FloatingJoystick extends Container {
 
   /** the base of the joystick */
@@ -156,10 +157,12 @@ export class FloatingJoystick extends Container {
    * @param opts more options such as callbacks
    * * onEndCallback function to call when drag (that started in the area)
    *    ends.
+   * * preview whether or not the joysticks should start visible
    *
    */
   constructor(hitArea: Rectangle, opts?: {
-    onEndCallback: () => void,
+    onEndCallback?: () => void,
+    preview?: boolean,
   }) {
     super();
 
@@ -202,10 +205,17 @@ export class FloatingJoystick extends Container {
         .on('touchend', this.onEnd)
         .on('touchendoutside', this.onEnd)
         .on('touchcancel', this.onEnd);
-    // console.log('new touch', this.width, this.height, this.hitArea);
 
-    this.innerCircle.visible = false;
-    this.outerCircle.visible = false;
+    if (opts && opts.preview) {
+      // Keep joystick visible and move to the middle-bottom of the area
+      const xNew = hitArea.width * 0.5;
+      const yNew = hitArea.height * 0.75;
+      this.innerCircle.position.set(xNew, yNew);
+      this.outerCircle.position.set(xNew, yNew);
+    } else {
+      this.innerCircle.visible = false;
+      this.outerCircle.visible = false;
+    }
   }
 
   /** @return the coordinate from joystick base to joystick top,
@@ -236,7 +246,7 @@ export class FloatingJoystick extends Container {
    * This means the diff becomes [0, 0] until the user moves the joystick.
    */
   private onStart(event: InteractionEvent) {
-    const startPos = event.data.getLocalPosition(this.parent);
+    const startPos = event.data.getLocalPosition(this);
     // Store a reference to the data so we can track the movement of this
     // particular touch. (For multi-touch)
     this.eventData = event.data;
@@ -250,15 +260,18 @@ export class FloatingJoystick extends Container {
   /** When touch moves, keep the outer in place, but move inner towards pos */
   private onMove() {
     if (this.dragging) {
-      const currPos = this.eventData.getLocalPosition(this.parent);
+      const currPos = this.eventData.getLocalPosition(this);
       this.setJoystickHeadPos(currPos);
     }
   }
 
   private onEnd() {
-    // hide visibility of joystick
-    this.innerCircle.visible = false;
-    this.outerCircle.visible = false;
+    // Hide visibility of joystick only if it was dragging to begin with
+    // So previews won't get hidden too early
+    if (this.dragging) {
+      this.innerCircle.visible = false;
+      this.outerCircle.visible = false;
+    }
     // Need to check this.dragging because otherwise will also trigger if start
     // drag from outside this joystick but end inside.
     if (this.onEndCallback && this.dragging) {

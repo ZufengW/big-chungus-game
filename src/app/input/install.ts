@@ -24,14 +24,22 @@ export class PlayerInputManager {
 
     this.chungus = chungus;
 
-    // Create two joysticks and add to stage
+    // Show joystick preview if the device allows touch
+    const showJoyStickPreview = interaction.supportsTouchEvents;
+
+    // Create two joysticks and add to stage.
     const rectLeft = new Rectangle(0, 0, APP_WIDTH_HALF, APP_WIDTH);
-    this.joystickLeft = new FloatingJoystick(rectLeft);
+    this.joystickLeft = new FloatingJoystick(rectLeft, {
+      preview: showJoyStickPreview,
+    });
     sceneStage.addChild(this.joystickLeft);
-    const rectRight = new Rectangle(APP_WIDTH_HALF, 0, APP_WIDTH_HALF, APP_WIDTH);
+    // Right joystick takes up the right side of the screen
+    const rectRight = new Rectangle(0, 0, APP_WIDTH_HALF, APP_WIDTH);
     this.joystickRight = new FloatingJoystick(rectRight, {
       onEndCallback: () => {chungus.attemptDash(); },
+      preview: showJoyStickPreview,
     });
+    this.joystickRight.position.set(APP_WIDTH_HALF, 0);
     sceneStage.addChild(this.joystickRight);
   }
 
