@@ -2,7 +2,6 @@ export const MAP_PATH = './assets/arena.png';
 export const CHUNGUS_PATH = './assets/big-chungus-smaller.png';
 export const ELMER_BODY_PATH = './assets/elmer-body-sm.png';
 export const ELMER_ARMS_PATH = './assets/elmer-arms-sm.png';
-export const TREASURE_HUNTER_PATH = './assets/treasureHunter.json';
 export const BULLET_PATH = './assets/bullet.png';
 export const TAZ_BODY_PATH = './assets/taz-body-sm.png';
 export const TAZ_ARM_PATH = './assets/taz-arm-sm.png';

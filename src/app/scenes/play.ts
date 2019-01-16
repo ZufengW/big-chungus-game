@@ -7,7 +7,6 @@ import { Elmer } from '../containers/elmer';
 import { Factory } from '../containers/factory';
 import { HealthBar } from '../containers/health_bar';
 import { Taz } from '../containers/taz';
-import { Treasure } from '../containers/treasure';
 import { randPosAwayFrom, randRange } from '../helpers';
 import { PlayerInputManager } from '../input/install';
 import {
@@ -50,7 +49,6 @@ let tazFactory: Factory<Taz>;
 let bulletFactory: Factory<Bullet>;
 let carrotFactory: Factory<Carrot>;
 
-let treasure: Treasure;  // treasure chest
 /** only initialised at a later wave */
 let boulder: Boulder = null;
 /** mouse position in stage coordinates */
@@ -86,9 +84,6 @@ let playerInputManger: PlayerInputManager;
 export function create(): ISceneType {
   const sceneStage = new Container();
 
-  /** Alias to point to the texture atlas's textures object */
-  const id = loader.resources[R.TREASURE_HUNTER_PATH].textures;
-
   // Create the map and zStage
   map = new Sprite(resources[R.MAP_PATH].texture);
   sceneStage.addChild(map);
@@ -107,13 +102,6 @@ export function create(): ISceneType {
   zStage.addChild(chungus);
   // Chungus says something upon entering
   chungus.say(FIRST_THING_CHUNGUS_SAYS);
-
-  treasure = new Treasure(id['treasure.png']);
-  // Position the treasure next to the right edge of the canvas
-  treasure.x = sceneStage.width - treasure.width - 148;
-  treasure.y = sceneStage.height / 2 - treasure.height / 2;
-  zStage.addChild(treasure);
-  treasure.updateZIndex();
 
   // Set up Elmer
   Elmer.createBullet = (globalPos) => {

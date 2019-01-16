@@ -64,7 +64,6 @@ loader
   .add(R.CHUNGUS_PATH)
   .add(R.ELMER_BODY_PATH)
   .add(R.ELMER_ARMS_PATH)
-  .add(R.TREASURE_HUNTER_PATH)
   .add(R.TAZ_BODY_PATH)
   .add(R.TAZ_ARM_PATH)
   .add(R.TAZ_EYES_RED_PATH)
