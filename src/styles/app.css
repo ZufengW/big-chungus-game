@@ -17,6 +17,10 @@ canvas {
   display: inline-block;
 }
 
+ul {
+  margin-top: 0.5em;
+}
+
 #container {
   position: absolute;
   left: 50%;
@@ -28,3 +32,6 @@ canvas {
   text-align: center;
 }
 
+.pre-list {
+  margin-bottom: 0.5em;
+}
