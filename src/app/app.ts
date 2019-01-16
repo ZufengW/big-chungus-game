@@ -82,6 +82,8 @@ function loadProgressHandler(load, resource) {
 
 // Things used in the game
 let gameState: (delta: number) => void;
+/** each iteration of gameLoop adds delta. Physics updates try to keep up. */
+let deltaToCatchUp: number = 0;
 // Scenes
 let currentScene: ISceneType;
 let titleScene: ISceneType;
@@ -110,13 +112,13 @@ function setup() {
  * @param delta frame time
  */
 function gameLoop(delta: number) {
-  // Cap delta to prevent accumulating to high values
-  if (delta > 1.1) {
-    delta = 1.1;
+  deltaToCatchUp += delta;
+  while (deltaToCatchUp >= 1) {
+    // Update the current game state (physics, etc.).
+    // May need to call this multiple times if the visuals lag.
+    gameState(1);
+    deltaToCatchUp -= 1;
   }
-
-  // Update the current game state
-  gameState(delta);
 }
 
 /** Change from one scene to another
