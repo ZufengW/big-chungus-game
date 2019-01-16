@@ -26,10 +26,12 @@ let numSpawnsRemaining = 0;
 let nextSpawnTime = 0;
 /** time between creature spawns during a wave */
 let timeBetweenSpawns = 0;
-/** Time between spawns also increases as the wave progresses
+/** The time delay between spawns also increases linearly as the wave progresses
  * So creatures spawn more quickly at the start, then slow down.
  */
 const TIME_BETWEEN_SPAWNS_INCREASE = 2;
+/** Cap to prevent the time between spawns growing too large in later waves */
+const MAX_TIME_BETWEEN_SPAWNS = 120;
 
 /** Rest period between waves (frames) */
 const WAVE_REST_PERIOD = 60;
@@ -159,6 +161,8 @@ function updateSpawning(delta: number): MovingContainer[] {
     nextSpawnTime += timeBetweenSpawns;
     // time between spawns also increases linearly as the wave progresses
     timeBetweenSpawns += TIME_BETWEEN_SPAWNS_INCREASE;
+    // increases up to a cap
+    timeBetweenSpawns = Math.min(timeBetweenSpawns, MAX_TIME_BETWEEN_SPAWNS);
     numSpawnsRemaining--;
   }
   if (numSpawnsRemaining === 0) {
@@ -202,5 +206,6 @@ function beginNextWave() {
   // Calculate the timing of spawning
   const waveSpawningDuration = getWaveSpawningDuration(waveNumber);
   numSpawnsRemaining = getWavePopulation(waveNumber);
+  // this value is the spawn delay after the first enemy
   timeBetweenSpawns = Math.floor(waveSpawningDuration / numSpawnsRemaining);
 }
