@@ -359,7 +359,7 @@ function update(delta: number) {
   } else if (chungus.isVulnerable()) {
     // taz can damage chungus
     tazFactory.forEach((taz) => {
-      if (taz.isAttacking() && chungus.collision(taz)) {
+      if (taz.canDamage() && chungus.collision(taz)) {
         chungus.takeDamage(taz);
       }
     });

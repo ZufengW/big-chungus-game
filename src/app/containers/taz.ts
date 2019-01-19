@@ -13,7 +13,6 @@ import { MovingContainer } from './moving_container';
 /** Taz's Active substates */
 enum ActiveState {
   Walking,
-  Attacking,
   Hurt,
 }
 
@@ -45,10 +44,9 @@ export class Taz extends Character {
   /** time spent in Hurt state */
   private hurtTime = 0;
 
-  /** When aggro, will chase enemey */
+  /** When aggro, will chase enemy */
   private aggro = false;
-  /** Whether or not taz is attacking (i.e. swinging arm) */
-  private attacking = true;
+
   /** Number of hits taz can survive */
   private hp = 2;
 
@@ -93,15 +91,16 @@ export class Taz extends Character {
     super.init();
     this.activeState = ActiveState.Walking;
     this.eyes.visible = false;
+    this.eyes.alpha = 0;
     this.rerollWalkDest();
     this.aggro = false;
     this.hp = 2;
     this.body.tint = 0xffffff;
   }
 
-  /** Whether or not taz is attacking (and active). */
-  public isAttacking(): boolean {
-    return this.attacking && super.isActive();
+  /** Whether or not taz is able to deal damage. */
+  public canDamage(): boolean {
+    return this.eyes.alpha >= 1;
   }
 
   /** Whether or not taz is vulnerable to damage.
@@ -118,9 +117,6 @@ export class Taz extends Character {
       switch (this.activeState) {
         case ActiveState.Walking:
           this.updateWalking(delta);
-          break;
-        case ActiveState.Attacking:
-          this.updateAttacking(delta);
           break;
         case ActiveState.Hurt:
           this.updateHurt(delta);
@@ -144,6 +140,10 @@ export class Taz extends Character {
    */
   public takeDamage(from?: MovingContainer): void {
     this.hp--;
+    // Lose aggression immediately
+    this.aggro = false;
+    this.eyes.alpha = 0;
+
     if (this.hp <= 0) {
       super.takeDamage(from);
       return;
@@ -154,7 +154,7 @@ export class Taz extends Character {
       this.dx += from.dx * 2;
       this.dy += from.dy * 2;
     }
-    this.aggro = false;
+
     this.activeState = ActiveState.Hurt;
     this.hurtTime = HURT_DURATION;
   }
@@ -167,21 +167,20 @@ export class Taz extends Character {
     // if enemy is close, charge an attack and move towards enemy.
     let [x, y] = pointTo(this.position, this.enemy.position);
     const squaredDistToEnemy = lengthSquared([x, y]);
-    if (squaredDistToEnemy < WALKING_AGGRO_RANGE_SQUARED || this.aggro) {
-      if (this.aggro) {
-        if (squaredDistToEnemy > WALKING_CALMDOWN_RANGE_SQUARED) {
-          this.aggro = false;
-        }
-      } else {
-        // Not yet aggro. Transition.
-        this.aggro = true;
-        this.eyes.visible = true;
-        this.eyes.alpha = 0;
-      }
-      this.attacking = this.chargeAttack(delta);
-      if (this.attacking) {
-        // Actually attack.
-        this.attacking = true;
+
+    // Check if should be aggro or not
+    if (squaredDistToEnemy < WALKING_AGGRO_RANGE_SQUARED) {
+      this.aggro = true;
+      this.eyes.visible = true;
+    } else if (squaredDistToEnemy > WALKING_CALMDOWN_RANGE_SQUARED) {
+      this.aggro = false;
+    }
+
+    if (this.aggro) {
+      // When aggro, charge attack and chase enemy
+      this.chargeAttack(delta);
+      if (this.canDamage()) {
+        // Attack is sufficiently charged. Swinging arm animation.
         this.arm.rotation -= 0.5 * delta;
       }
       if (squaredDistToEnemy < DIST_TOO_CLOSE) {
@@ -190,38 +189,30 @@ export class Taz extends Character {
         this.dy = 0;
         return;
       }
-
     } else {
-      // Otherwise move towards destination.
-      this.eyes.alpha -= delta * EYES_TRANSITION_SPEED;
+      // Else if not aggro: move towards normal destination instead.
+      const nextAlpha = this.eyes.alpha -= delta * EYES_TRANSITION_SPEED;
+      this.eyes.alpha = Math.max(0, nextAlpha);
       [x, y] = pointTo(this.position, this.walkDest);
+
+      // If close to destination, reroll destination
+      if (lengthSquared([x, y]) < DIST_TOO_CLOSE) {
+        this.rerollWalkDest();
+      }
     }
-    // If close to destination, reroll destination
-    if (lengthSquared([x, y]) < DIST_TOO_CLOSE) {
-      this.rerollWalkDest();
-    }
+
     // Move towards destination
     const [dx, dy] = normalise([x, y]);
     this.dx = dx * WALK_SPEED;
     this.dy = dy * WALK_SPEED;
   }
 
-  /**
-   * When attacking, taz charges towards the enemy
-   * @param delta frame time
-   */
-  private updateAttacking(delta: number) {
-    // TODO
-  }
-
-  /** When hurt, taz is affected by knockback. */
+  /** When hurt, taz won't move and will lose aggression. */
   private updateHurt(delta: number): void {
     // Damp velocity
     this.dx *= 0.96;
     this.dy *= 0.96;
     this.hurtTime -= delta;
-    // Reduce aggro when hurt
-    this.eyes.alpha -= delta * EYES_TRANSITION_SPEED;
     if (this.hurtTime <= 0) {
       // Change back to Walking state. Stay slightly red.
       this.body.tint = 0xffaaaa;
@@ -230,20 +221,19 @@ export class Taz extends Character {
   }
 
   /**
-   *
+   * Transition towards being able to attack. (Increase eye glow)
    * @param delta frame time
-   * @return whether or not attack has charged yet
    */
-  private chargeAttack(delta: number): boolean {
+  private chargeAttack(delta: number): void {
     const nextAlpha = this.eyes.alpha + delta * EYES_TRANSITION_SPEED;
     if (nextAlpha >= 1) {
       this.eyes.alpha = 1;
-      return true;
+      return;
     }
     this.eyes.alpha = nextAlpha;
-    return false;
   }
 
+  /** Choose another random destiation to walk to */
   private rerollWalkDest() {
     this.walkDest.x = randRange(Taz.minX, Taz.maxX);
     this.walkDest.y = randRange(Taz.minY, Taz.maxY);
