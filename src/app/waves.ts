@@ -20,16 +20,15 @@ let waveState = WaveState.None;
 let waveNumber = 0;
 /** How long the current wave has been going for (frames) */
 let waveTime = 0;
-/** Number of creatures left to spawn in this wave */
-let numSpawnsRemaining = 0;
+/** Total number of creatures to spawn in this wave */
+let wavePopulation = 0;
+/** how many creatures have spawned this wave */
+let spawnIndex = 0;
+/** Minimum delay between the spawning of two creatures in this wave */
+let minSpawnDelay = 0;
+
 /** at what waveTime in this wave will the next creature spawn */
 let nextSpawnTime = 0;
-/** time between creature spawns during a wave */
-let timeBetweenSpawns = 0;
-/** The time delay between spawns also increases linearly as the wave progresses
- * So creatures spawn more quickly at the start, then slow down.
- */
-const TIME_BETWEEN_SPAWNS_INCREASE = 2;
 /** Cap to prevent the time between spawns growing too large in later waves */
 const MAX_TIME_BETWEEN_SPAWNS = 120;
 
@@ -94,20 +93,35 @@ export function restartWaves() {
 }
 
 /**
- * Grows quadratically
- * @param n wave number
- * @return number of creatures that should spawn this wave
+ * Growth is quadratic + small exponential.
+ * @param n wave number (start at 1)
+ * @return number of creatures that should spawn in wave n
  */
 function getWavePopulation(n: number) {
-  return (n ** 2) + n;
+  return (0.5 * ((n + 2) ** 2) + 2.5 * n) + Math.floor(1.1 ** n) - 5;
 }
 
 /**
- * Get wave spawning duration (frames)
+ * Get the starting spawn delay of wave n.
  * @param n wave number
+ * @return spawn delay between the first and second creatures in wave n.
+ *    Starts at 120 for wave 1, eventually reaches 10.
  */
-function getWaveSpawningDuration(n: number) {
-  return 0.5 * (n ** 2) + (240 * n);
+function getFirstSpawnDelay(n: number) {
+  return Math.floor(110 / n + 10);
+}
+
+/**
+ * Quadratic interpolation.
+ * @param n value to interpolate. In range [0, nMax]
+ * @param nMax max n value. (must be > 0) (nMin is 0)
+ * @param valMin minimum output value
+ * @param valMax maximum output value
+ * @return n converted to a value in range [valMin, valMax]
+ */
+function quadLerp(n: number, nMax: number, valMin: number, valMax: number): number {
+  const proportion = n / nMax;
+  return (valMax - valMin) * (proportion ** 2) + valMin;
 }
 
 /**
@@ -154,18 +168,20 @@ function updateSpawning(delta: number): MovingContainer[] {
   /** characters spawned this update */
   const spawned: Character[] = [];
 
-  while (waveTime >= nextSpawnTime && numSpawnsRemaining > 0) {
-    // Spawn the next thing in the queue
+  while (waveTime >= nextSpawnTime && spawnIndex < wavePopulation) {
+    // Enough time passed. Spawn the next thing in the queue
     spawned.push(spawnQueue[spawnQueuePos]());
+
+    const spawnDelay = quadLerp(
+        spawnIndex, wavePopulation - 1,
+        minSpawnDelay, MAX_TIME_BETWEEN_SPAWNS,
+    );
     spawnQueuePos = (spawnQueuePos + 1) % spawnQueue.length;
-    nextSpawnTime += timeBetweenSpawns;
-    // time between spawns also increases linearly as the wave progresses
-    timeBetweenSpawns += TIME_BETWEEN_SPAWNS_INCREASE;
-    // increases up to a cap
-    timeBetweenSpawns = Math.min(timeBetweenSpawns, MAX_TIME_BETWEEN_SPAWNS);
-    numSpawnsRemaining--;
+    nextSpawnTime += spawnDelay;
+
+    spawnIndex++;
   }
-  if (numSpawnsRemaining === 0) {
+  if (spawnIndex === wavePopulation) {
     // finished spawning all the creatures. Wait for wave to end.
     waveState = WaveState.Waiting;
   }
@@ -203,9 +219,8 @@ function beginNextWave() {
   nextSpawnTime = 0;
   spawnQueuePos = 0;
   waveState = WaveState.Spawning;
-  // Calculate the timing of spawning
-  const waveSpawningDuration = getWaveSpawningDuration(waveNumber);
-  numSpawnsRemaining = getWavePopulation(waveNumber);
-  // this value is the spawn delay after the first enemy
-  timeBetweenSpawns = Math.floor(waveSpawningDuration / numSpawnsRemaining);
+  // Calculate spawning population and delay
+  wavePopulation = getWavePopulation(waveNumber);
+  spawnIndex = 0;
+  minSpawnDelay = getFirstSpawnDelay(waveNumber);
 }
