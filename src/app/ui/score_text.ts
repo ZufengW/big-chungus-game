@@ -5,6 +5,8 @@ import {
 
 /** this ui component has state. Alternative to using a class */
 let score: number = 0;
+/** The highest score achieved. Doesn't reset. */
+let highScore: number = 0;
 let scoreText: Text;
 
 /** When frozen, score can't change anymore. */
@@ -84,6 +86,10 @@ export function getScore() {
   return score;
 }
 
+export function getHighScore() {
+  return highScore;
+}
+
 /** Prevent the score from changing until next resetScore */
 export function freezeScore() {
   scoreFrozen = true;
@@ -94,4 +100,5 @@ export function finaliseScore() {
   freezeScore();  // freeze if not already
   scoreText.text = 'Final score: ' + String(score);
   scoreText.rotation = 0;
+  highScore = Math.max(highScore, score);
 }

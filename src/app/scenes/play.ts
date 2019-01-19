@@ -200,6 +200,7 @@ export function create(): ISceneType {
     update,
     // activate,
     // deactivate,
+    resume,
   };
 
   return scene;
@@ -228,6 +229,10 @@ function restart() {
   chungus.position.set(map.width / 2);
   zStage.addChild(chungus);
   chungus.say(FIRST_THING_CHUNGUS_SAYS);
+}
+
+function resume() {
+  // TODO
 }
 
 /**

@@ -144,10 +144,11 @@ export function startPlayScene() {
   }
 }
 
-/** Switch to the title scene. Don't restart. */
+/** Switch to the title scene. Don't restart. Resume. */
 export function startTitleScene() {
   if (currentScene !== titleScene) {
     switchScene(titleScene);
+    titleScene.resume();
   }
 }
 

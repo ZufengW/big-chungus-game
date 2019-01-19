@@ -6,15 +6,13 @@ import { PlayerInputManager } from '../input/install';
 import {
   Container,
   loader,
-  Point,
-  Rectangle,
   Sprite,
   Text,
   TextStyle,
-  ZContainer,
 } from '../pixi_alias';
 import * as R from '../resources';
 import { Button } from '../ui/button';
+import { getHighScore } from '../ui/score_text';
 import { SpeechBubble } from '../ui/speech';
 import {
   DUNGEON_MAX_X, DUNGEON_MAX_Y, DUNGEON_MIN_X, DUNGEON_MIN_Y,
@@ -50,6 +48,9 @@ let map: Sprite;
 // For user input and controlling chungus
 let playerInputManger: PlayerInputManager;
 
+// High score
+let highScoreTextMessage: Text;
+
 /** Create the stage */
 export function create(): ISceneType {
   const sceneStage = new Container();
@@ -76,7 +77,7 @@ export function create(): ISceneType {
   map.addChild(boulder);
 
   // Create a title message
-  const style = new TextStyle({
+  const titleStyle = new TextStyle({
     fontFamily: 'Futura',
     fontSize: 32,
     fill: 'white',
@@ -87,10 +88,27 @@ export function create(): ISceneType {
     dropShadowBlur: 4,
     dropShadowDistance: 2,
   });
-  const textMessage = new Text('Big Chungus', style);
-  textMessage.anchor.set(0.5, 0.5);
-  textMessage.position.set(APP_WIDTH_HALF, 150);
-  sceneStage.addChild(textMessage);
+  const titleTextMessage = new Text('Big Chungus', titleStyle);
+  titleTextMessage.anchor.set(0.5, 0.5);
+  titleTextMessage.position.set(APP_WIDTH_HALF, 150);
+  sceneStage.addChild(titleTextMessage);
+
+  // Create a high score message
+  const style = new TextStyle({
+    fontFamily: 'Menlo',
+    fontSize: 18,
+    fill: 'white',
+    stroke: '#000000',
+    strokeThickness: 2,
+    dropShadow: true,
+    dropShadowColor: '#000000',
+    dropShadowBlur: 4,
+    dropShadowDistance: 2,
+  });
+  highScoreTextMessage = new Text('', style);
+  highScoreTextMessage.anchor.set(0.5, 0.5);
+  highScoreTextMessage.position.set(APP_WIDTH_HALF, DUNGEON_MAX_Y + 120);
+  sceneStage.addChild(highScoreTextMessage);
 
   // Create joystick and keyboard controls
   playerInputManger = new PlayerInputManager(sceneStage, chungus);
@@ -106,12 +124,17 @@ export function create(): ISceneType {
     update,
     // activate,
     // deactivate,
+    resume,
   };
   return scene;
 }
 
 function restart() {
   // TODO
+}
+
+function resume() {
+  highScoreTextMessage.text = 'High score: ' + String(getHighScore());
 }
 
 function update(delta: number) {

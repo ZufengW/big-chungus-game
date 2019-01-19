@@ -6,4 +6,5 @@ export interface ISceneType {
   update: (delta: number) => void;
   // activate;
   // deactivate;
+  resume: () => void;
 }
