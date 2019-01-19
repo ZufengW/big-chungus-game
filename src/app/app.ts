@@ -1,5 +1,5 @@
 import './../styles/app.css';
-import { FloatingJoystick } from './input/input';
+import { FloatingJoystick } from './input/joystick';
 import {
   Application,
   Container,
