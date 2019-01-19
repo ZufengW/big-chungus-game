@@ -7,9 +7,12 @@ import {
 const OUTER_RADIUS = 100;
 const INNER_RADIUS = 40;
 
-// max distance of joystick from middle
+/** max distance of joystick from middle */
 const JOYSTICK_DIST = 80;
 const JOYSTICK_DIST_SQUARED = JOYSTICK_DIST ** 2;
+
+/** when user is not touching the joystick, it's visible at a lower alpha */
+const NO_TOUCH_ALPHA = 0.5;
 
 /** For user input -- touch control. Can be dragged. */
 export class FloatingJoystick extends Container {
@@ -87,8 +90,7 @@ export class FloatingJoystick extends Container {
       this.innerCircle.position.set(xNew, yNew);
       this.outerCircle.position.set(xNew, yNew);
     } else {
-      this.innerCircle.visible = false;
-      this.outerCircle.visible = false;
+      this.alpha = NO_TOUCH_ALPHA;
     }
   }
 
@@ -124,8 +126,7 @@ export class FloatingJoystick extends Container {
     // Store a reference to the data so we can track the movement of this
     // particular touch. (For multi-touch)
     this.eventData = event.data;
-    this.innerCircle.visible = true;
-    this.outerCircle.visible = true;
+    this.alpha = 1;
     this.outerCircle.position = startPos;
     this.innerCircle.position = startPos;
     this.dragging = true;
@@ -139,12 +140,13 @@ export class FloatingJoystick extends Container {
     }
   }
 
+  /** When touch ends, reduce visibility and reset position of joystick head */
   private onEnd() {
     // Hide visibility of joystick only if it was dragging to begin with
     // So previews won't get hidden too early
     if (this.dragging) {
-      this.innerCircle.visible = false;
-      this.outerCircle.visible = false;
+      this.alpha = NO_TOUCH_ALPHA;
+      this.innerCircle.position = this.outerCircle.position;
     }
     // Need to check this.dragging because otherwise will also trigger if start
     // drag from outside this joystick but end inside.

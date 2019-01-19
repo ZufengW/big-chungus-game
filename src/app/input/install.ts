@@ -5,8 +5,8 @@ import {
   Point,
   Rectangle,
 } from '../pixi_alias';
-import { getKeyboardMoveInput } from './keyboard';
 import { FloatingJoystick } from './joystick';
+import { getKeyboardMoveInput } from './keyboard';
 
 /**
  * Creates and manages things for user input to control player.
