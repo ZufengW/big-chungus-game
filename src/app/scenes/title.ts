@@ -111,7 +111,8 @@ export function create(): ISceneType {
   sceneStage.addChild(highScoreTextMessage);
 
   // Create joystick and keyboard controls
-  playerInputManger = new PlayerInputManager(sceneStage, chungus);
+  playerInputManger = new PlayerInputManager(sceneStage, chungus, true);
+  playerInputManger.startDemo();
 
   // Create a button. Needs to be after the joysticks to be on top.
   const playButton = new Button('Play', startPlayScene);
