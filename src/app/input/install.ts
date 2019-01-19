@@ -5,7 +5,7 @@ import {
   Point,
   Rectangle,
 } from '../pixi_alias';
-import { getKeyboardMoveInput } from './input';
+import { getKeyboardMoveInput } from './keyboard';
 import { FloatingJoystick } from './joystick';
 
 /**
