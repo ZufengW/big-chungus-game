@@ -20,47 +20,52 @@ export class PlayerInputManager {
   private chungus: Chungus;
   private joystickLeft: FloatingJoystick;
   private joystickRight: FloatingJoystick;
+  /** Just to be safe in case supportsTouchEvents can somehow change */
+  private touchEventsSupported = false;
 
+  /**
+   *
+   * @param sceneStage scene to add this manager to.
+   * The manager adds the joysticks as children of this scene.
+   * @param chungus player controlled
+   */
   constructor(sceneStage: Container, chungus: Chungus) {
 
     this.chungus = chungus;
 
-    // Show joystick preview if the device allows touch
-    const showJoyStickPreview = interaction.supportsTouchEvents;
-
-    // Create two joysticks and add to stage.
-    const rectLeft = new Rectangle(0, 0, APP_WIDTH_HALF, APP_WIDTH);
-    this.joystickLeft = new FloatingJoystick(rectLeft, {
-      preview: showJoyStickPreview,
-    });
-    sceneStage.addChild(this.joystickLeft);
-    // Right joystick takes up the right side of the screen
-    const rectRight = new Rectangle(0, 0, APP_WIDTH_HALF, APP_WIDTH);
-    this.joystickRight = new FloatingJoystick(rectRight, {
-      onEndCallback: () => {chungus.attemptDash(); },
-      preview: showJoyStickPreview,
-    });
-    this.joystickRight.position.set(APP_WIDTH_HALF, 0);
-    sceneStage.addChild(this.joystickRight);
+    // If the device allows touch, create two joysticks and add to stage
+    this.touchEventsSupported = interaction.supportsTouchEvents;
+    if (this.touchEventsSupported) {
+      const rectLeft = new Rectangle(0, 0, APP_WIDTH_HALF, APP_WIDTH);
+      this.joystickLeft = new FloatingJoystick(rectLeft, {
+        preview: true,
+      });
+      sceneStage.addChild(this.joystickLeft);
+      // Right joystick takes up the right side of the screen
+      const rectRight = new Rectangle(0, 0, APP_WIDTH_HALF, APP_WIDTH);
+      this.joystickRight = new FloatingJoystick(rectRight, {
+        onEndCallback: () => {chungus.attemptDash(); },
+        preview: true,
+      });
+      this.joystickRight.position.set(APP_WIDTH_HALF, 0);
+      sceneStage.addChild(this.joystickRight);
+    }
   }
 
-  // return an update function
+  /** check user input */
   public update(delta: number) {
     const player = this.chungus;
 
-    // Get user input. Try touch with fallback to keyboard.
-    let moveInput = this.joystickLeft.getDiffNormalised();
-    if (moveInput[0] === 0 && moveInput[1] === 0) {
-      moveInput = getKeyboardMoveInput();
-    }
-    player.setMoveInput(moveInput);
-
     // Set aim position. Use touch with fallback to mouse.
-    if (interaction.supportsTouchEvents) {
+    if (this.touchEventsSupported) {
+      player.setMoveInput(this.joystickLeft.getDiffNormalised());
+
       const aimInput = this.joystickRight.getDiff();
       player.setDashDest(aimInput[0], aimInput[1]);
     } else {
-      // No touch events. Fallback to mouse
+      // No touch events. Fallback to keyboard and mouse
+      player.setMoveInput(getKeyboardMoveInput());
+
       this.mapDashDestPos = interaction.mouse.getLocalPosition(
           player.parent, this.mapDashDestPos,
       );
