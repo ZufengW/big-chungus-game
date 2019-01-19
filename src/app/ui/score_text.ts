@@ -15,7 +15,7 @@ let bonusSize = 1;
 /** Countdown before bonus size starts shrinking */
 let bonusSizeShrinkDelay = 0;
 
-const MAX_BONUS_SIZE = 20;
+const MAX_BONUS_SIZE = 10;
 /** delay before bonusSize starts dropping. In frames */
 const SHRINK_DELAY = 60;
 
@@ -87,4 +87,11 @@ export function getScore() {
 /** Prevent the score from changing until next resetScore */
 export function freezeScore() {
   scoreFrozen = true;
+}
+
+/** Call this at the end of the game. Also freezes the score. */
+export function finaliseScore() {
+  freezeScore();  // freeze if not already
+  scoreText.text = 'Final score: ' + String(score);
+  scoreText.rotation = 0;
 }

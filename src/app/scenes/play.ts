@@ -20,7 +20,7 @@ import {
 } from '../pixi_alias';
 import * as R from '../resources';
 import {
-  addScore, initScoreText, resetScore, updateScoreText,
+  addScore, finaliseScore, initScoreText, resetScore, updateScoreText,
 } from '../ui/score_text';
 import { Kind as EndingType, WinLoseUI } from '../ui/winLose';
 import { installWaves, restartWaves, updateWave } from '../waves';
@@ -239,9 +239,11 @@ function update(delta: number) {
   if (winLoseUI.visible === false) {
     if (!chungus.isActive() && healthBar.getHealth() <= 0) {
       winLoseUI.setKind(EndingType.Lose);
+      finaliseScore();
       winLoseUI.visible = true;
     } else if (chungus.hasWon()) {
       winLoseUI.setKind(EndingType.Win);
+      finaliseScore();
       winLoseUI.visible = true;
     }
 
