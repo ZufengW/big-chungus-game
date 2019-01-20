@@ -100,13 +100,19 @@ export class PlayerInputManager {
     this.chungus.say('Here\'s how it\'s done');
   }
 
-  /** Call this to end the demo */
+  /** Call this to end the demo.
+   * Can also call before the demo has finished to skip the rest.
+   */
   public endDemo() {
     this.keyHolder.visible = false;
     this.demoCursor.visible = false;
     this.demoTime = 0;
     if (this.onEndCallback) {
       this.onEndCallback();
+    }
+    if (this.joystickLeft && this.joystickRight) {
+      this.joystickLeft.setHeadPos(0, 0);
+      this.joystickRight.setHeadPos(0, 0);
     }
   }
 
