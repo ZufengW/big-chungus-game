@@ -78,7 +78,7 @@ export function create(): ISceneType {
   map.addChild(chungus);
 
   boulder = new Boulder(resources[R.BOULDER_PATH].texture);
-  boulder.position.set(100, 100);
+  boulder.position.set(100, 200);
   map.addChild(boulder);
 
   // Create a title message

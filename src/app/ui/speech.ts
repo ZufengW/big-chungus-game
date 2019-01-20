@@ -82,11 +82,15 @@ export class SpeechBubble extends Container {
   }
 
   /** Begin saying something
-   * @param text what to say
+   * @param text what to say. If empty string (''), then it will stop speaking.
    * @param speed (Optional) how fast to say it. Defaults to normal speed.
    */
   public say(text: string, speed = SpeechBubble.SPEAK_SPEED_NORMAL) {
     this.targetText = text;
+    if (text === '') {
+      this.visible = false;
+      return;
+    }
     this.speakProgress = 0;
     this.textTimeRemaining = text.length + TEXT_REMAIN_EXTRA;
     this.updateText('');  // Clear the previous text before making visible
