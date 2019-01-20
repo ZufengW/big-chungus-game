@@ -89,7 +89,8 @@ export function create(): ISceneType {
   sceneStage.addChild(map);
   map.addChild(zStage);
 
-  scoreText = initScoreText(APP_WIDTH_HALF, 60);
+  scoreText = initScoreText();
+  scoreText.position.set(APP_WIDTH_HALF, 60);
   sceneStage.addChild(scoreText);
 
   // Create the health bar and the player
@@ -223,6 +224,7 @@ function restart() {
   winLoseUI.visible = false;
   resetScore();
   zStage.removeChildren();
+  scoreText.position.set(APP_WIDTH_HALF, 60);
 
   // Reactivate things
   chungus.init();
@@ -244,10 +246,13 @@ function update(delta: number) {
   if (winLoseUI.visible === false) {
     if (!chungus.isActive() && healthBar.getHealth() <= 0) {
       winLoseUI.setKind(EndingType.Lose);
+      scoreText.position.set(APP_WIDTH_HALF, 120);
       finaliseScore();
       winLoseUI.visible = true;
     } else if (chungus.hasWon()) {
       winLoseUI.setKind(EndingType.Win);
+      // Make the score text move down so it doesn't block
+      scoreText.position.set(APP_WIDTH_HALF, 120);
       finaliseScore();
       winLoseUI.visible = true;
     }

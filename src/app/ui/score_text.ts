@@ -22,7 +22,7 @@ const MAX_BONUS_SIZE = 10;
 const SHRINK_DELAY = 60;
 
 /** initialise the Text that displays the game score */
-export function initScoreText(x: number, y: number): Text {
+export function initScoreText(): Text {
   const style = new TextStyle({
     fontFamily: 'Futura',
     fontSize: 32,
@@ -37,7 +37,6 @@ export function initScoreText(x: number, y: number): Text {
   const textMessage = new Text('0', style);
   textMessage.anchor.set(0.5, 0.5);  // anchor right in the middle for spinning
   textMessage.rotation = 0.1;
-  textMessage.position.set(x, y);
   scoreText = textMessage;
   return textMessage;
 }
