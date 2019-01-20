@@ -25,7 +25,7 @@ const resources = loader.resources;  // Alias
 /** Things chungus says. delay is after what delay */
 const speeches = [
   {
-    text: 'I\'ll show you how it\'s done.',
+    text: 'Here\'s how it\'s done.',
     delay: 60 * 1,
     speed: SpeechBubble.SPEAK_SPEED_NORMAL,
   },
@@ -118,6 +118,7 @@ export function create(): ISceneType {
   // Create joystick and keyboard controls
   playerInputManger = new PlayerInputManager(sceneStage, chungus, true);
   playerInputManger.startDemo(() => {
+    chungus.say('Now you try.');
     playButton.visible = true;
   });
 
