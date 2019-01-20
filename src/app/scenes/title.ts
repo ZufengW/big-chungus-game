@@ -25,13 +25,18 @@ const resources = loader.resources;  // Alias
 /** Things chungus says. delay is after what delay */
 const speeches = [
   {
-    text: 'My very own game.',
-    delay: 60 * 3,
+    text: 'I\'ll show you how it\'s done.',
+    delay: 60 * 1,
     speed: SpeechBubble.SPEAK_SPEED_NORMAL,
   },
   {
-    text: 'I hope it has carrots.',
-    delay: 60 * 10,
+    text: '',
+    delay: 60 * 5,
+    speed: SpeechBubble.SPEAK_SPEED_NORMAL,
+  },
+  {
+    text: 'My very own game.',
+    delay: 60 * 30,
     speed: SpeechBubble.SPEAK_SPEED_NORMAL,
   },
 ];
@@ -112,11 +117,15 @@ export function create(): ISceneType {
 
   // Create joystick and keyboard controls
   playerInputManger = new PlayerInputManager(sceneStage, chungus, true);
-  playerInputManger.startDemo();
+  playerInputManger.startDemo(() => {
+    playButton.visible = true;
+  });
 
-  // Create a button. Needs to be after the joysticks to be on top.
+  // Create a play button. Needs to be added after the joysticks to be on top.
   const playButton = new Button('Play', startPlayScene);
   playButton.position.set(APP_WIDTH_HALF - playButton.width / 2, DUNGEON_MAX_Y);
+  // Initially invisible until the demo finishes
+  playButton.visible = false;
   sceneStage.addChild(playButton);
 
   const scene: ISceneType = {

@@ -5,6 +5,7 @@ import {
   Point,
   Rectangle,
 } from '../pixi_alias';
+import { FakeCursor } from '../ui/fake_cursor';
 import { KeyboardKey } from '../ui/keyboard_key';
 import { FloatingJoystick } from './joystick';
 import { getKeyboardMoveInput } from './keyboard';
@@ -33,6 +34,8 @@ export class PlayerInputManager {
   private keyS: KeyboardKey;
   private keyD: KeyboardKey;
   private keyHolder: Container;
+  private demoCursor: FakeCursor;
+  private onEndCallback: () => void;
 
   /** how long the demo has been running for. Value of 0 means not started */
   private demoTime = 0;
@@ -83,9 +86,14 @@ export class PlayerInputManager {
 
   }
 
-  /** Demo the controls of the game */
-  public startDemo() {
+  /** Demo the controls of the game
+   * @param onEndCallback function to call when the demo ends
+   */
+  public startDemo(onEndCallback?: () => void) {
     this.demoTime = 1;
+    if (onEndCallback) {
+      this.onEndCallback = onEndCallback;
+    }
   }
 
   private normalUpdate(delta: number) {
@@ -119,30 +127,68 @@ export class PlayerInputManager {
     const player = this.chungus;
     const moveInput: [number, number] = [0, 0];
     const t = this.demoTime;
-    if (t < KEY_HOLD_DURATION) {
+    const APP_WIDTH_QUARTER = APP_WIDTH_HALF / 2;
+
+    // Cursor offsets (express as coordinates relative to player's position)
+    let xCursorOffset = -APP_WIDTH_QUARTER;
+    let yCursorOffset = -100;
+
+    if (t < 3 * KEY_HOLD_DURATION) {
       return;
-    } else if (t < 2 * KEY_HOLD_DURATION) {
+    } else if (t < 4 * KEY_HOLD_DURATION) {
       this.keyW.setPressed();
       moveInput[1] -= 1;
-    } else if (t < 3 * KEY_HOLD_DURATION) {
+    } else if (t < 5 * KEY_HOLD_DURATION) {
       this.keyW.setUnpressed();
       this.keyA.setPressed();
       moveInput[0] -= 1;
-    } else if (t < 4 * KEY_HOLD_DURATION) {
+    } else if (t < 6 * KEY_HOLD_DURATION) {
       this.keyA.setUnpressed();
       this.keyS.setPressed();
       moveInput[1] += 1;
-    } else if (t < 5 * KEY_HOLD_DURATION) {
+    } else if (t < 7 * KEY_HOLD_DURATION) {
       this.keyS.setUnpressed();
       this.keyD.setPressed();
       moveInput[0] += 1;
-    } else if (t < 6 * KEY_HOLD_DURATION) {
+    } else if (t < 8 * KEY_HOLD_DURATION) {
       this.keyD.setUnpressed();
+    } else if (t < 8 * KEY_HOLD_DURATION + Math.PI * 2 * KEY_HOLD_DURATION) {
+      const tSince = t - 8 * KEY_HOLD_DURATION;
+      xCursorOffset = -APP_WIDTH_QUARTER * Math.cos(tSince * 0.05);
+      if (tSince >= Math.PI * KEY_HOLD_DURATION) {
+        yCursorOffset = APP_WIDTH_QUARTER * Math.sin(tSince * 0.05) - 100;
+      }
+    } else if (t < 15.5 * KEY_HOLD_DURATION) {
+      // Wait
+    } else if (t < 15.6 * KEY_HOLD_DURATION) {
+      this.demoCursor.setPressed();
+      player.attemptDash();
+    } else if (t < 16.5 * KEY_HOLD_DURATION) {
+      this.demoCursor.setUnpressed();
     } else {
+      this.demoCursor.setUnpressed();
       this.endDemo();
     }
 
+    // Pass the demo input to the player
     player.setMoveInput(moveInput);
+
+    // Note that the fake cursor's position is relative to the sceneState
+    player.setDashDest(
+      xCursorOffset,
+      yCursorOffset,
+    );
+
+    const playerGlobalPos = player.getGlobalPosition();
+    this.demoCursor.position.set(
+      playerGlobalPos.x + xCursorOffset,
+      playerGlobalPos.y + yCursorOffset,
+    );
+
+    // player.setDashDest(
+    //   cursorPos.x - player.x,
+    //   cursorPos.y - player.y,
+    // );
     return;
   }
 
@@ -165,13 +211,28 @@ export class PlayerInputManager {
     this.keyHolder.addChild(this.keyS);
     this.keyHolder.addChild(this.keyD);
 
-    this.keyHolder.position.set(APP_WIDTH_HALF / 2, APP_WIDTH_HALF * 0.7);
+    this.keyHolder.position.set(APP_WIDTH_HALF / 2, APP_WIDTH * 0.6);
+
+    this.demoCursor = new FakeCursor();
+    // this.demoCursor.position.set(APP_WIDTH_HALF / 2);
+    const APP_WIDTH_QUARTER = APP_WIDTH_HALF / 2;
+    const playerPos = this.chungus.getGlobalPosition();
+    this.demoCursor.position.set(
+      playerPos.x - APP_WIDTH_QUARTER,
+      playerPos.y - 100,
+    );
+    sceneStage.addChild(this.demoCursor);
 
     sceneStage.addChild(this.keyHolder);
   }
 
   private endDemo() {
     this.keyHolder.visible = false;
+    this.demoCursor.visible = false;
     this.demoTime = 0;
+    if (this.onEndCallback) {
+      this.onEndCallback();
+    }
+    // TODO: remove children
   }
 }
