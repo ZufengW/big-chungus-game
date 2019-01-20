@@ -59,6 +59,14 @@ export class Button extends Container {
     this.bg.height = this.buttonText.height + PADDING_VERTICAL * 2;
   }
 
+  /** sets the text on the button */
+  public setText(newText: string) {
+    this.buttonText.text = newText;
+    // And resize the background
+    this.bg.width = this.buttonText.width + PADDING_HORIZONTAL * 2;
+    this.bg.height = this.buttonText.height + PADDING_VERTICAL * 2;
+  }
+
   /** darken the background when pointer hovers over */
   private onOver() {
     this.bg.tint = 0xcccccc;

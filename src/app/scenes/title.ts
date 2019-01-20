@@ -25,16 +25,6 @@ const resources = loader.resources;  // Alias
 /** Things chungus says. delay is after what delay */
 const speeches = [
   {
-    text: 'Here\'s how it\'s done.',
-    delay: 60 * 1,
-    speed: SpeechBubble.SPEAK_SPEED_NORMAL,
-  },
-  {
-    text: '',
-    delay: 60 * 5,
-    speed: SpeechBubble.SPEAK_SPEED_NORMAL,
-  },
-  {
     text: 'My very own game.',
     delay: 60 * 30,
     speed: SpeechBubble.SPEAK_SPEED_NORMAL,
@@ -55,6 +45,9 @@ let playerInputManger: PlayerInputManager;
 
 // High score
 let highScoreTextMessage: Text;
+// Buttons
+let playButton: Button;
+let demoButton: Button;
 
 /** Create the stage */
 export function create(): ISceneType {
@@ -119,15 +112,22 @@ export function create(): ISceneType {
   playerInputManger = new PlayerInputManager(sceneStage, chungus, true);
   playerInputManger.startDemo(() => {
     chungus.say('Now you try.');
+    demoButton.setText('Demo');
     playButton.visible = true;
   });
 
   // Create a play button. Needs to be added after the joysticks to be on top.
-  const playButton = new Button('Play', startPlayScene);
+  playButton = new Button('Play', startPlayScene);
   playButton.position.set(APP_WIDTH_HALF - playButton.width / 2, DUNGEON_MAX_Y);
   // Initially invisible until the demo finishes
   playButton.visible = false;
   sceneStage.addChild(playButton);
+
+  // Button to skip / start demo
+  demoButton = new Button('Skip', onDemoButtonClick);
+  demoButton.position.set(DUNGEON_MAX_X, DUNGEON_MAX_Y);
+  sceneStage.addChild(demoButton);
+  demoButton.alpha = 0.5;
 
   const scene: ISceneType = {
     sceneContainer: sceneStage,
@@ -190,4 +190,19 @@ function update(delta: number) {
   }
 
   updateLayersOrder(map);
+}
+
+/** Either stop or start the demo */
+function onDemoButtonClick() {
+  if (playerInputManger.isDemoRunning()) {
+    // Skip button pressed
+    playerInputManger.endDemo();
+    chungus.say('Ain\'t nobody got time for that.');
+    demoButton.setText('Demo');
+  } else {
+    // Demo button pressed
+    playerInputManger.startDemo();
+    playButton.visible = false;
+    demoButton.setText('Skip');
+  }
 }

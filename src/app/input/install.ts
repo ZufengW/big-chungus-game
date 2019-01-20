@@ -87,16 +87,35 @@ export class PlayerInputManager {
 
   }
 
-  /** Demo the controls of the game
+  /** Start the Demo of the controls of the game
    * @param onEndCallback function to call when the demo ends
    */
   public startDemo(onEndCallback?: () => void) {
+    this.keyHolder.visible = true;
+    this.demoCursor.visible = true;
     this.demoTime = 1;
     if (onEndCallback) {
       this.onEndCallback = onEndCallback;
     }
+    this.chungus.say('Here\'s how it\'s done');
   }
 
+  /** Call this to end the demo */
+  public endDemo() {
+    this.keyHolder.visible = false;
+    this.demoCursor.visible = false;
+    this.demoTime = 0;
+    if (this.onEndCallback) {
+      this.onEndCallback();
+    }
+  }
+
+  /** @return Whether or not the demo is running */
+  public isDemoRunning(): boolean {
+    return this.demoTime > 0;
+  }
+
+  /** Get user input and apply to chungus */
   private normalUpdate(delta: number) {
     const player = this.chungus;
 
@@ -135,6 +154,7 @@ export class PlayerInputManager {
     let yCursorOffset = -100;
 
     if (t < 3 * KEY_HOLD_DURATION) {
+      // Move towards position
       return;
     } else if (t < 4 * KEY_HOLD_DURATION) {
       this.keyW.setPressed();
@@ -144,6 +164,7 @@ export class PlayerInputManager {
       this.keyA.setPressed();
       moveInput[0] -= 1;
     } else if (t < 6 * KEY_HOLD_DURATION) {
+      this.chungus.say('');
       this.keyA.setUnpressed();
       this.keyS.setPressed();
       moveInput[1] += 1;
@@ -238,15 +259,5 @@ export class PlayerInputManager {
 
       sceneStage.addChild(this.keyHolder);
     }
-  }
-
-  private endDemo() {
-    this.keyHolder.visible = false;
-    this.demoCursor.visible = false;
-    this.demoTime = 0;
-    if (this.onEndCallback) {
-      this.onEndCallback();
-    }
-    // TODO: remove children
   }
 }
