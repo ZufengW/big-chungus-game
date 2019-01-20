@@ -91,6 +91,17 @@ export function create(): ISceneType {
   titleTextMessage.position.set(APP_WIDTH_HALF, 150);
   sceneStage.addChild(titleTextMessage);
 
+  // Create a corner message with credit
+  const subtitleStyle = new TextStyle({
+    fontFamily: 'Futura',
+    fontSize: 14,
+    fill: 'gray',
+  });
+  const cornerTextMessage = new Text('A game by ZufengW', subtitleStyle);
+  cornerTextMessage.anchor.set(0, 1);
+  cornerTextMessage.position.set(5, APP_WIDTH - 5);
+  sceneStage.addChild(cornerTextMessage);
+
   // Create a high score message
   const style = new TextStyle({
     fontFamily: 'Menlo',
