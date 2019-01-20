@@ -118,6 +118,20 @@ export class FloatingJoystick extends Container {
     return this.dragging;
   }
 
+  /**
+   * Set the position of the head of the joystick relative to the body.
+   * Can use to demo.
+   * @param xOffset x offset from [0, 1]
+   * @param yOffset y offset from [0, 1]
+   */
+  public setHeadPos(xOffset: number, yOffset: number) {
+    const dist = JOYSTICK_DIST * 0.75;
+    this.innerCircle.position.set(
+      this.outerCircle.x + dist * xOffset,
+      this.outerCircle.y + dist * yOffset,
+    );
+  }
+
   /** When touch starts, move the entire joystick here.
    * This means the diff becomes [0, 0] until the user moves the joystick.
    */

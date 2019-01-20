@@ -1,5 +1,6 @@
 import { APP_WIDTH, APP_WIDTH_HALF, interaction } from '../app';
 import { Chungus } from '../containers/chungus';
+import { normalise } from '../helpers';
 import {
   Container,
   Point,
@@ -161,13 +162,20 @@ export class PlayerInputManager {
     } else if (t < 15.5 * KEY_HOLD_DURATION) {
       // Wait
     } else if (t < 15.6 * KEY_HOLD_DURATION) {
+      // Activate the dash
       this.demoCursor.setPressed();
+      if (this.joystickRight) {
+        this.joystickRight.alpha = 0.5;
+      }
       player.attemptDash();
     } else if (t < 16.5 * KEY_HOLD_DURATION) {
       this.demoCursor.setUnpressed();
+      if (this.joystickRight) {
+        this.joystickRight.setHeadPos(0, 0);
+      }
     } else {
-      this.demoCursor.setUnpressed();
       this.endDemo();
+      return;
     }
 
     // Pass the demo input to the player
@@ -185,10 +193,13 @@ export class PlayerInputManager {
       playerGlobalPos.y + yCursorOffset,
     );
 
-    // player.setDashDest(
-    //   cursorPos.x - player.x,
-    //   cursorPos.y - player.y,
-    // );
+    // Update the position of the joysticks to match the demo input
+    if (this.touchEventsSupported) {
+      this.joystickLeft.setHeadPos(moveInput[0], moveInput[1]);
+
+      const [x, y] = normalise([xCursorOffset, yCursorOffset]);
+      this.joystickRight.setHeadPos(x, y);
+    }
     return;
   }
 
@@ -221,9 +232,12 @@ export class PlayerInputManager {
       playerPos.x - APP_WIDTH_QUARTER,
       playerPos.y - 100,
     );
-    sceneStage.addChild(this.demoCursor);
 
-    sceneStage.addChild(this.keyHolder);
+    if (!this.touchEventsSupported) {
+      sceneStage.addChild(this.demoCursor);
+
+      sceneStage.addChild(this.keyHolder);
+    }
   }
 
   private endDemo() {
