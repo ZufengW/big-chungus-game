@@ -261,9 +261,6 @@ function update(delta: number) {
       winLoseUI.visible = true;
     }
 
-    // Get and apply user input. Try touch with fallback to keyboard.
-    playerInputManger.update(delta);
-
     // Spawn new enemies now and then
     // Stop spawning after the game ends (winLoseUI is visible)
     const movers = updateWave(delta);
@@ -275,6 +272,9 @@ function update(delta: number) {
       c.position.set(x, y);
     }
   }
+
+  // Get and apply user input.
+  playerInputManger.update(delta);
 
   // Update everything
   chungus.update(delta);
