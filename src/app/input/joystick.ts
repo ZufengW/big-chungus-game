@@ -11,11 +11,11 @@ const INNER_RADIUS = 40;
 const JOYSTICK_DIST = 80;
 const JOYSTICK_DIST_SQUARED = JOYSTICK_DIST ** 2;
 
-/** when user is not touching the joystick, it's visible at a lower alpha */
-const NO_TOUCH_ALPHA = 0.5;
-
 /** For user input -- touch control. Can be dragged. */
 export class FloatingJoystick extends Container {
+
+  /** when user is not touching the joystick, it's visible at a lower alpha */
+  public static readonly NO_TOUCH_ALPHA = 0.5;
 
   /** the base of the joystick */
   private outerCircle: Graphics;
@@ -90,7 +90,7 @@ export class FloatingJoystick extends Container {
       this.innerCircle.position.set(xNew, yNew);
       this.outerCircle.position.set(xNew, yNew);
     } else {
-      this.alpha = NO_TOUCH_ALPHA;
+      this.alpha = FloatingJoystick.NO_TOUCH_ALPHA;
     }
   }
 
@@ -159,7 +159,7 @@ export class FloatingJoystick extends Container {
     // Hide visibility of joystick only if it was dragging to begin with
     // So previews won't get hidden too early
     if (this.dragging) {
-      this.alpha = NO_TOUCH_ALPHA;
+      this.alpha = FloatingJoystick.NO_TOUCH_ALPHA;
       this.innerCircle.position = this.outerCircle.position;
     }
     // Need to check this.dragging because otherwise will also trigger if start

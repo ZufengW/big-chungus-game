@@ -97,6 +97,10 @@ export class PlayerInputManager {
     if (onEndCallback) {
       this.onEndCallback = onEndCallback;
     }
+    if (this.joystickLeft && this.joystickRight) {
+      this.joystickLeft.alpha = FloatingJoystick.NO_TOUCH_ALPHA;
+      this.joystickRight.alpha = FloatingJoystick.NO_TOUCH_ALPHA;
+    }
     this.chungus.say('Here\'s how it\'s done');
   }
 
@@ -160,11 +164,14 @@ export class PlayerInputManager {
     let yCursorOffset = -100;
 
     if (t < 3 * KEY_HOLD_DURATION) {
-      // Move towards position
-      return;
+      // Do nothing
     } else if (t < 4 * KEY_HOLD_DURATION) {
+      // Walking controls
       this.keyW.setPressed();
       moveInput[1] -= 1;
+      if (this.joystickLeft) {
+        this.joystickLeft.alpha = 1;
+      }
     } else if (t < 5 * KEY_HOLD_DURATION) {
       this.keyW.setUnpressed();
       this.keyA.setPressed();
@@ -179,12 +186,21 @@ export class PlayerInputManager {
       this.keyD.setPressed();
       moveInput[0] += 1;
     } else if (t < 8 * KEY_HOLD_DURATION) {
+      // Stop walking. Wait.
       this.keyD.setUnpressed();
+      if (this.joystickLeft) {
+        this.joystickLeft.alpha = FloatingJoystick.NO_TOUCH_ALPHA;
+      }
     } else if (t < 8 * KEY_HOLD_DURATION + Math.PI * 2 * KEY_HOLD_DURATION) {
+      // Aiming the dash
       const tSince = t - 8 * KEY_HOLD_DURATION;
       xCursorOffset = -APP_WIDTH_QUARTER * Math.cos(tSince * 0.05);
       if (tSince >= Math.PI * KEY_HOLD_DURATION) {
         yCursorOffset = APP_WIDTH_QUARTER * Math.sin(tSince * 0.05) - 100;
+      }
+      // Simulate joystick hold
+      if (this.joystickRight) {
+        this.joystickRight.alpha = 1;
       }
     } else if (t < 15.5 * KEY_HOLD_DURATION) {
       // Wait
@@ -192,7 +208,7 @@ export class PlayerInputManager {
       // Activate the dash
       this.demoCursor.setPressed();
       if (this.joystickRight) {
-        this.joystickRight.alpha = 0.5;
+        this.joystickRight.alpha = FloatingJoystick.NO_TOUCH_ALPHA;
       }
       player.attemptDash();
     } else if (t < 16.5 * KEY_HOLD_DURATION) {
