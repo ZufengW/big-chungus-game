@@ -410,6 +410,8 @@ export class Chungus extends Character {
     this.body.texture = this.powerTexture;
     // Scale down the body so that the new texture is same size as old
     this.body.scale.set(NEW_BODY_SCALE);
+
+    this.dz += 35;  // Do a jump for effect
   }
 
   /** when powered up */
