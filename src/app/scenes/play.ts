@@ -58,6 +58,9 @@ let map: Sprite;
 /** Sub-container within map that only holds things with zIndex */
 const zStage = new Container();
 
+/** Whether or no chungus has explained carrot mechanic yet */
+let hasExplainedCarrot: boolean = false;
+
 // UI
 let scoreText: Text;
 const winLoseUI = new WinLoseUI();
@@ -140,7 +143,7 @@ export function create(): ISceneType {
     () => new Bullet(resources[R.BULLET_PATH].texture),
   );
   carrotFactory = new Factory(
-      () => new Carrot(resources[R.CARROT_PATH].texture, carrotPickedUp),
+      () => new Carrot(resources[R.CARROT_PATH].texture, onCarrotPickedUp),
   );
 
   // Initialise up boulder
@@ -220,6 +223,7 @@ function restart() {
   // Reset things
   chungus.deactivate();
   boulder.deactivate();
+  hasExplainedCarrot = false;
   // Reset UI
   winLoseUI.visible = false;
   resetScore();
@@ -332,6 +336,11 @@ function update(delta: number) {
       } else if (healthBar.isBelowMaxhealth()
           && carrot.canPickUp() && carrot.collision(chungus)) {
         carrot.pickUp(chungus);
+      } else if (!hasExplainedCarrot && carrot.canPickUp()
+          && carrot.collision(chungus)) {
+        // Once per game, Chungus explains how carrot works
+        chungus.say('Save it for when I\'m hurt.');
+        hasExplainedCarrot = true;
       }
     }
   });
@@ -416,7 +425,7 @@ function compareZIndex(a: ZContainer , b: ZContainer) {
 }
 
 /** callback function for when the carrot has finished being picked up */
-function carrotPickedUp(carrot: Carrot) {
+function onCarrotPickedUp(carrot: Carrot) {
   if (healthBar.getHealth() > 0) {
     if (carrot === powerCarrot) {
       // power up effect
