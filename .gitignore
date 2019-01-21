@@ -3,6 +3,7 @@ public
 
 # Don't commit assets because they might change in the future
 src/assets
+src/top_level
 
 .DS_Store
 .idea

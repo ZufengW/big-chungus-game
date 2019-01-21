@@ -6,7 +6,10 @@ module.exports = {
   entry: './src/app/app.ts',
   plugins: [
     new CleanWebpackPlugin(['public/']),
-    new CopyWebpackPlugin([ { from: 'src/assets', to: 'assets' } ]),
+    new CopyWebpackPlugin([
+      { from: 'src/assets', to: 'assets' },
+      { from: 'src/top_level', to: '' },
+    ]),
     new HtmlWebpackPlugin({
       template: 'src/templates/index.html'
     }),
