@@ -22,6 +22,8 @@ export class FloatingJoystick extends Container {
   /** The joystick */
   private innerCircle: Graphics;
 
+  /** if enabled, will respond to touch events */
+  private isEnabled: boolean = true;
   /** Whether or not the joystick is being dragged (pointer is down) */
   private dragging = false;
   private eventData: InteractionData;
@@ -132,10 +134,21 @@ export class FloatingJoystick extends Container {
     );
   }
 
+  /**
+   * Enable or disable the joystick responding to touch events.
+   * @param enabled either true or false
+   */
+  public setEnabled(enabled: boolean) {
+    this.isEnabled = enabled;
+  }
+
   /** When touch starts, move the entire joystick here.
    * This means the diff becomes [0, 0] until the user moves the joystick.
    */
   private onStart(event: InteractionEvent) {
+    if (!this.isEnabled) {
+      return;
+    }
     const startPos = event.data.getLocalPosition(this);
     // Store a reference to the data so we can track the movement of this
     // particular touch. (For multi-touch)
@@ -148,7 +161,7 @@ export class FloatingJoystick extends Container {
 
   /** When touch moves, keep the outer in place, but move inner towards pos */
   private onMove() {
-    if (this.dragging) {
+    if (this.dragging && this.isEnabled) {
       const currPos = this.eventData.getLocalPosition(this);
       this.setJoystickHeadPos(currPos);
     }
@@ -156,6 +169,9 @@ export class FloatingJoystick extends Container {
 
   /** When touch ends, reduce visibility and reset position of joystick head */
   private onEnd() {
+    if (!this.isEnabled) {
+      return;
+    }
     // Hide visibility of joystick only if it was dragging to begin with
     // So previews won't get hidden too early
     if (this.dragging) {

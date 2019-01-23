@@ -100,6 +100,9 @@ export class PlayerInputManager {
     if (this.joystickLeft && this.joystickRight) {
       this.joystickLeft.alpha = FloatingJoystick.NO_TOUCH_ALPHA;
       this.joystickRight.alpha = FloatingJoystick.NO_TOUCH_ALPHA;
+      // Disable to prevent user input
+      this.joystickLeft.setEnabled(false);
+      this.joystickRight.setEnabled(false);
     }
     this.chungus.say('Here\'s how it\'s done');
   }
@@ -117,6 +120,8 @@ export class PlayerInputManager {
     if (this.joystickLeft && this.joystickRight) {
       this.joystickLeft.setHeadPos(0, 0);
       this.joystickRight.setHeadPos(0, 0);
+      this.joystickLeft.setEnabled(true);
+      this.joystickRight.setEnabled(true);
     }
   }
 
@@ -162,6 +167,13 @@ export class PlayerInputManager {
     // Cursor offsets (express as coordinates relative to player's position)
     let xCursorOffset = -APP_WIDTH_QUARTER;
     let yCursorOffset = -100;
+
+    // Don't offset the right joystick at the start
+    // To keep the joystick head in the neutral position.
+    if (this.joystickRight && t < 8 * KEY_HOLD_DURATION) {
+      xCursorOffset = 0;
+      yCursorOffset = 0;
+    }
 
     if (t < 3 * KEY_HOLD_DURATION) {
       // Do nothing
