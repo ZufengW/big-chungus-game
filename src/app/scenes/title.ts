@@ -76,19 +76,21 @@ export function create(): ISceneType {
 
   // Create a title message
   const titleStyle = new TextStyle({
-    fontFamily: 'Futura',
+    fontFamily: ['Orbitron Black', 'Futura'],
     fontSize: 32,
     fill: 'white',
     stroke: '#000000',
-    strokeThickness: 6,
+    strokeThickness: 2,
     dropShadow: true,
+    dropShadowAlpha: 0.5,
     dropShadowColor: '#000000',
-    dropShadowBlur: 4,
-    dropShadowDistance: 2,
+    dropShadowBlur: 6,
+    dropShadowDistance: 6,
   });
-  const titleTextMessage = new Text('Big Chungus', titleStyle);
+  const titleTextMessage = new Text('BIG CHUNGUS', titleStyle);
   titleTextMessage.anchor.set(0.5, 0.5);
   titleTextMessage.position.set(APP_WIDTH_HALF, 150);
+  titleTextMessage.scale.y = 1.3;
   sceneStage.addChild(titleTextMessage);
 
   // Create a corner message with credit
