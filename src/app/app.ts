@@ -46,12 +46,16 @@ resize();
 function resize() {
   let w: number;
   let h: number;
-  if (window.innerWidth / window.innerHeight >= ASPECT_RATIO) {
-    w = window.innerHeight * ASPECT_RATIO;
-    h = window.innerHeight;
+  // For some reason, sometimes innerWidth < outerWidth, sometimes the opposite
+  // Quick fix: use the min of both so the canvas isn't too big
+  const minWindowWidth = Math.min(window.innerWidth, window.outerWidth);
+  const minWindowHeight = Math.min(window.innerHeight, window.outerHeight);
+  if (minWindowWidth / minWindowHeight >= ASPECT_RATIO) {
+    w = minWindowHeight * ASPECT_RATIO;
+    h = minWindowHeight;
   } else {
-    w = window.innerWidth;
-    h = window.innerWidth / ASPECT_RATIO;
+    w = minWindowWidth;
+    h = minWindowWidth / ASPECT_RATIO;
   }
   app.renderer.view.style.width = w + 'px';
   app.renderer.view.style.height = h + 'px';
