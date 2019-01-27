@@ -41,6 +41,11 @@ document.getElementById('canvas-div').appendChild(app.view);
 /** p node for displaying loading messages */
 const loadingP = document.getElementById('loading-p');
 
+// When clicked, scroll until canvas is aligned to the top of the visible area
+document.getElementById('scroll-button').onclick = () => {
+  app.view.scrollIntoView(true);
+};
+
 // Load the assets
 loader
   .add(R.MAP_PATH)

@@ -22,6 +22,10 @@ ul {
   margin-top: 0.5em;
 }
 
+button {
+  padding: 0.5em;
+}
+
 .container {
   max-width: 100vh;
   margin: auto;
