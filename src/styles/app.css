@@ -2,6 +2,7 @@ body {
   background-color: rgb(23, 24, 28);
   color: rgb(216, 213, 209);
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  margin: 8px 0;
 }
 
 a {
@@ -24,6 +25,8 @@ ul {
 
 button {
   padding: 0.5em;
+  background-color: rgb(216, 213, 209);
+  color: rgb(23, 24, 28);
 }
 
 .container {
