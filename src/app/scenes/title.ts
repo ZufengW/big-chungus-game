@@ -22,15 +22,6 @@ import { ISceneType } from './scene';
 
 const resources = loader.resources;  // Alias
 
-/** Things chungus says. delay is after what delay */
-const speeches = [
-  {
-    text: 'My very own game.',
-    delay: 60 * 30,
-    speed: SpeechBubble.SPEAK_SPEED_NORMAL,
-  },
-];
-let speechIndex = 0;
 /** amount of time spent in this scene */
 let sceneTime = 0;
 
@@ -182,13 +173,6 @@ function update(delta: number) {
   chungus.constrainPosition(
       DUNGEON_MIN_X, DUNGEON_MAX_X, DUNGEON_MIN_Y, DUNGEON_MAX_Y,
   );
-
-  // say things
-  if (speechIndex < speeches.length
-      && sceneTime >= speeches[speechIndex].delay) {
-    chungus.say(speeches[speechIndex].text, speeches[speechIndex].speed);
-    speechIndex++;
-  }
 
   if (chungus.isDashing()) {
     // Chungus can launch the boulder when it is moving slow
