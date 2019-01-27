@@ -51,20 +51,6 @@ export function create(): ISceneType {
   map.position.set(mapOffset);
   sceneStage.addChild(map);
 
-  // Create a health bar and hide it
-  healthBar = new HealthBar(5);
-  healthBar.pivot.set(0, healthBar.height / 2);
-  healthBar.position.set(60, 60);
-  healthBar.visible = false;
-  // Create the player
-  chungus = new Chungus(resources[R.CHUNGUS_PATH].texture, healthBar, resources[R.CHUNGUS_POWER_PATH].texture);
-  chungus.position.set(APP_WIDTH_HALF, APP_WIDTH_HALF);
-  map.addChild(chungus);
-
-  boulder = new Boulder(resources[R.BOULDER_PATH].texture);
-  boulder.position.set(100, 200);
-  map.addChild(boulder);
-
   // Create a title message
   const titleStyle = new TextStyle({
     fontFamily: ['Orbitron Black', 'Futura'],
@@ -80,9 +66,23 @@ export function create(): ISceneType {
   });
   const titleTextMessage = new Text('BIG CHUNGUS', titleStyle);
   titleTextMessage.anchor.set(0.5, 0.5);
-  titleTextMessage.position.set(APP_WIDTH_HALF, 150);
+  titleTextMessage.position.set(map.width / 2, 100);
   titleTextMessage.scale.y = 1.3;
-  sceneStage.addChild(titleTextMessage);
+  map.addChild(titleTextMessage);
+
+  // Create a health bar and hide it
+  healthBar = new HealthBar(5);
+  healthBar.pivot.set(0, healthBar.height / 2);
+  healthBar.position.set(60, 60);
+  healthBar.visible = false;
+  // Create the player
+  chungus = new Chungus(resources[R.CHUNGUS_PATH].texture, healthBar, resources[R.CHUNGUS_POWER_PATH].texture);
+  chungus.position.set(APP_WIDTH_HALF, APP_WIDTH_HALF);
+  map.addChild(chungus);
+
+  boulder = new Boulder(resources[R.BOULDER_PATH].texture);
+  boulder.position.set(100, 200);
+  map.addChild(boulder);
 
   // Create a corner message with credit
   const subtitleStyle = new TextStyle({
