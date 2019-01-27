@@ -14,8 +14,8 @@ h1 {
 }
 
 canvas {
-  /* to center the canvas within its parent */
-  display: inline-block;
+  width: 100vw;
+  max-width: 100vh;
 }
 
 ul {
@@ -23,10 +23,10 @@ ul {
 }
 
 #container {
-  position: absolute;
+  /* position: absolute;
   left: 50%;
   margin-right: -50%;
-  transform: translate(-50%, 0);
+  transform: translate(-50%, 0); */
 }
 
 #canvas-div {

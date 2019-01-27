@@ -41,27 +41,6 @@ document.getElementById('canvas-div').appendChild(app.view);
 /** p node for displaying loading messages */
 const loadingP = document.getElementById('loading-p');
 
-resize();
-// Make app resize to fit window while maintaining aspect ratio.
-function resize() {
-  let w: number;
-  let h: number;
-  // For some reason, sometimes innerWidth < outerWidth, sometimes the opposite
-  // Quick fix: use the min of both so the canvas isn't too big
-  const minWindowWidth = Math.min(window.innerWidth, window.outerWidth);
-  const minWindowHeight = Math.min(window.innerHeight, window.outerHeight);
-  if (minWindowWidth / minWindowHeight >= ASPECT_RATIO) {
-    w = minWindowHeight * ASPECT_RATIO;
-    h = minWindowHeight;
-  } else {
-    w = minWindowWidth;
-    h = minWindowWidth / ASPECT_RATIO;
-  }
-  app.renderer.view.style.width = w + 'px';
-  app.renderer.view.style.height = h + 'px';
-}
-window.onresize = resize;
-
 // Load the assets
 loader
   .add(R.MAP_PATH)
