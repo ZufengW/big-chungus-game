@@ -35,9 +35,17 @@ button {
 }
 
 #canvas-div {
+  margin-top: 2em;
   text-align: center;
 }
 
 .pre-list {
   margin-bottom: 0.5em;
+}
+
+/* on wide enough devices... */
+@media (min-width: 640px) {
+  .container {
+    padding: 0 2em;
+  }
 }
