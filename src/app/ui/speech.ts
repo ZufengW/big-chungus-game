@@ -135,24 +135,24 @@ export class SpeechBubble extends Container {
     }
     // Prevent the bubble from going off the right of the screen
     // Note: doesn't take parent's scale into account.
+    const parentScale = this.parent.scale.x;
+    const oneOverParentScale = 1 / parentScale;
     const globalPos = this.getGlobalPosition();
-    const xDiff = globalPos.x + this.fullWidth - APP_WIDTH;
+    const xDiff = globalPos.x + (this.fullWidth * parentScale) - APP_WIDTH;
     if (xDiff > 0) {
-      this.bg.x = -xDiff;
-      this.speechText.x = PADDING - xDiff;
+      this.bg.x = -xDiff * oneOverParentScale;
+      this.speechText.x = PADDING - xDiff * oneOverParentScale;
     } else {
       this.bg.x = 0;
       this.speechText.x = PADDING;
     }
     // Prevent the bubble from going beyond the top of the screen
-    // const yDiff = globalPos.y - TOTAL_HEIGHT;  // don't use this.height because it changes dynamically
-    // if (yDiff < 0) {
-    //   this.bg.y = -yDiff;
-    //   // this.speechText.y = -yDiff;
-    // } else {
-    //   this.bg.y = 0;
-    //   // this.speechText.y = 0;
-    // }
+    const yDiff = globalPos.y - this.container.height * parentScale;
+    if (yDiff < 0) {
+      this.container.y = -yDiff * oneOverParentScale;
+    } else {
+      this.container.y = 0;
+    }
   }
 
   /** Update the appearance of the speech bubble with new text */
