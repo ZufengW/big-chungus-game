@@ -1,3 +1,4 @@
+import { APP_WIDTH } from '../app';
 import {
   Container,
   Graphics,
@@ -27,8 +28,12 @@ export class SpeechBubble extends Container {
   public static readonly SPEAK_SPEED_NORMAL = 0.5;
   public static readonly SPEAK_SPEED_SLOW = 0.25;
 
-  // The thing to say
+  /** The thing to say */
   private targetText: string = '';
+  /** Contains the bg and text.
+   * Used for positioning and width/height calculations.
+   */
+  private container: Container;
   private bg: Graphics;
   private speechText: Text;
 
@@ -37,11 +42,15 @@ export class SpeechBubble extends Container {
   private speakProgress: number = 0;
   /** How long to spend displaying the speech bubble */
   private textTimeRemaining = 0;
+  /** The full width of the speech bubble after finished speaking */
+  private fullWidth = 0;
 
   constructor() {
     super();
 
     this.pivot.set(0, TOTAL_HEIGHT);
+
+    this.container = new Container();
 
     // draw a triangle
     const triangle = new Graphics();
@@ -53,7 +62,7 @@ export class SpeechBubble extends Container {
     triangle.lineTo(20, -20);
     triangle.lineTo(0, 0);
     triangle.position.set(0, TOTAL_HEIGHT);
-    this.addChild(triangle);
+    this.container.addChild(triangle);
 
     // Create the rounded rectangle background
     const bg = new Graphics();
@@ -61,7 +70,7 @@ export class SpeechBubble extends Container {
     bg.beginFill(0xffffff);
     bg.drawRoundedRect(0, 0, 84, 50, 8);
     bg.endFill();
-    this.addChild(bg);
+    this.container.addChild(bg);
     this.bg = bg;
 
     // Create the text
@@ -72,10 +81,12 @@ export class SpeechBubble extends Container {
     });
     const speechText = new Text('', style);
     // Padding on the top and left
-    speechText.position.set(PADDING, this.height - 20);
+    speechText.position.set(PADDING, this.container.height - 20);
     speechText.anchor.set(0, 1);
     this.speechText = speechText;
-    this.addChild(speechText);
+    this.container.addChild(speechText);
+
+    this.addChild(this.container);
 
     // Start invisible until something gets said
     this.visible = false;
@@ -87,8 +98,11 @@ export class SpeechBubble extends Container {
    */
   public say(text: string, speed = SpeechBubble.SPEAK_SPEED_NORMAL) {
     this.targetText = text;
+    this.visible = false;
+    // calculate the total expected width first
+    this.updateText(text);
+    this.fullWidth = this.container.width;
     if (text === '') {
-      this.visible = false;
       return;
     }
     this.speakProgress = 0;
@@ -119,6 +133,26 @@ export class SpeechBubble extends Container {
         this.visible = false;
       }
     }
+    // Prevent the bubble from going off the right of the screen
+    // Note: doesn't take parent's scale into account.
+    const globalPos = this.getGlobalPosition();
+    const xDiff = globalPos.x + this.fullWidth - APP_WIDTH;
+    if (xDiff > 0) {
+      this.bg.x = -xDiff;
+      this.speechText.x = PADDING - xDiff;
+    } else {
+      this.bg.x = 0;
+      this.speechText.x = PADDING;
+    }
+    // Prevent the bubble from going beyond the top of the screen
+    // const yDiff = globalPos.y - TOTAL_HEIGHT;  // don't use this.height because it changes dynamically
+    // if (yDiff < 0) {
+    //   this.bg.y = -yDiff;
+    //   // this.speechText.y = -yDiff;
+    // } else {
+    //   this.bg.y = 0;
+    //   // this.speechText.y = 0;
+    // }
   }
 
   /** Update the appearance of the speech bubble with new text */
