@@ -99,12 +99,13 @@ export class SpeechBubble extends Container {
   public say(text: string, speed = SpeechBubble.SPEAK_SPEED_NORMAL) {
     this.targetText = text;
     this.visible = false;
-    // calculate the total expected width first
-    this.updateText(text);
-    this.fullWidth = this.container.width;
     if (text === '') {
       return;
     }
+    // calculate the total expected width first
+    this.updateText(text);
+    this.fullWidth = this.container.width;
+
     this.speakProgress = 0;
     this.textTimeRemaining = text.length + TEXT_REMAIN_EXTRA;
     this.updateText('');  // Clear the previous text before making visible
