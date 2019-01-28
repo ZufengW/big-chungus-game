@@ -159,8 +159,9 @@ export class SpeechBubble extends Container {
   /** Update the appearance of the speech bubble with new text */
   private updateText(text: string) {
     this.speechText.text = text;
-    // bg needs to cover text
-    this.bg.width = this.speechText.width + PADDING_X2;
+    // Speech bubble bg needs to enclose the text contents
+    // Should also be wide enough to reach the arrow (when at the right)
+    this.bg.width = Math.max(this.speechText.width, -this.bg.x) + PADDING_X2;
     this.bg.height = this.speechText.height + PADDING_X2;
     // Note that speechText is anchored at the bottom-left
     // but bg is anchored at the top-left
