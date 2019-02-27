@@ -12,6 +12,8 @@ a {
 h1 {
   font-family: "Orbitron Black";
   text-align: center;
+  font-size: 2em;
+  margin: 0.7em 0;
 }
 
 canvas {
@@ -32,6 +34,18 @@ button {
 .container {
   max-width: 100vh;
   margin: auto;
+}
+
+.flex-container {
+  max-width: 100vh;
+  margin: auto;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+}
+
+.chungus-img {
+  height: 4em;
 }
 
 #canvas-div {
