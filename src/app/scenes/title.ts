@@ -112,13 +112,8 @@ export function create(): ISceneType {
   highScoreTextMessage.position.set(APP_WIDTH_HALF, DUNGEON_MAX_Y + 120);
   sceneStage.addChild(highScoreTextMessage);
 
-  // Create joystick and keyboard controls
+  // Create joystick and keyboard controls, and set up demo
   playerInputManger = new PlayerInputManager(sceneStage, chungus, true);
-  playerInputManger.startDemo(() => {
-    chungus.say('Now you try.');
-    demoButton.setText('Demo');
-    playButton.visible = true;
-  });
 
   // Create a play button. Needs to be added after the joysticks to be on top.
   playButton = new Button('Play', startPlayScene);
@@ -127,11 +122,10 @@ export function create(): ISceneType {
   playButton.visible = false;
   sceneStage.addChild(playButton);
 
-  // Button to skip / start demo
-  demoButton = new Button('Skip', onDemoButtonClick);
+  // Create button to start / skip demo
+  demoButton = new Button('Demo', onDemoButtonClick);
   demoButton.position.set(DUNGEON_MAX_X, DUNGEON_MAX_Y);
   sceneStage.addChild(demoButton);
-  demoButton.alpha = 0.5;
 
   const scene: ISceneType = {
     sceneContainer: sceneStage,
@@ -191,6 +185,8 @@ function update(delta: number) {
 
 /** Either stop or start the demo */
 function onDemoButtonClick() {
+  demoButton.alpha = 0.5;
+
   if (playerInputManger.isDemoRunning()) {
     // Skip button pressed
     playerInputManger.endDemo();
@@ -198,7 +194,12 @@ function onDemoButtonClick() {
     demoButton.setText('Demo');
   } else {
     // Demo button pressed
-    playerInputManger.startDemo();
+    playerInputManger.startDemo(() => {
+      chungus.say('Now you try.');
+      demoButton.setText('Demo');
+      // The play button isn't visible until you run the demo at least once
+      playButton.visible = true;
+    });
     playButton.visible = false;
     demoButton.setText('Skip');
   }

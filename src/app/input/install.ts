@@ -57,15 +57,12 @@ export class PlayerInputManager {
     this.touchEventsSupported = interaction.supportsTouchEvents;
     if (this.touchEventsSupported) {
       const rectLeft = new Rectangle(0, 0, APP_WIDTH_HALF, APP_WIDTH);
-      this.joystickLeft = new FloatingJoystick(rectLeft, {
-        preview: true,
-      });
+      this.joystickLeft = new FloatingJoystick(rectLeft);
       sceneStage.addChild(this.joystickLeft);
       // Right joystick takes up the right side of the screen
       const rectRight = new Rectangle(0, 0, APP_WIDTH_HALF, APP_WIDTH);
       this.joystickRight = new FloatingJoystick(rectRight, {
         onEndCallback: () => {chungus.attemptDash(); },
-        preview: true,
       });
       this.joystickRight.position.set(APP_WIDTH_HALF, 0);
       sceneStage.addChild(this.joystickRight);
@@ -97,17 +94,22 @@ export class PlayerInputManager {
     if (onEndCallback) {
       this.onEndCallback = onEndCallback;
     }
+    // Set the joysticks to the intial state
     if (this.joystickLeft && this.joystickRight) {
       this.joystickLeft.alpha = FloatingJoystick.NO_TOUCH_ALPHA;
       this.joystickRight.alpha = FloatingJoystick.NO_TOUCH_ALPHA;
       // Disable to prevent user input
       this.joystickLeft.setEnabled(false);
       this.joystickRight.setEnabled(false);
+
+      this.joystickLeft.resetPos();
+      this.joystickRight.resetPos();
     }
     this.chungus.say('Here\'s how it\'s done');
   }
 
-  /** Call this to end the demo.
+  /**
+   * Call this to end the demo and run the callback.
    * Can also call before the demo has finished to skip the rest.
    */
   public endDemo() {
@@ -289,6 +291,10 @@ export class PlayerInputManager {
     );
 
     if (!this.touchEventsSupported) {
+      // The inputs are invisible initally,
+      // but become visible after the demo starts
+      this.keyHolder.visible = false;
+      this.demoCursor.visible = false;
       sceneStage.addChild(this.demoCursor);
 
       sceneStage.addChild(this.keyHolder);

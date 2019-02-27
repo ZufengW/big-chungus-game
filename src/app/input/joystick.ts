@@ -85,15 +85,23 @@ export class FloatingJoystick extends Container {
         .on('touchendoutside', this.onEnd)
         .on('touchcancel', this.onEnd);
 
-    if (opts && opts.preview) {
-      // Keep joystick visible and move to the middle-bottom of the area
-      const xNew = hitArea.width * 0.5;
-      const yNew = hitArea.height * 0.75;
-      this.innerCircle.position.set(xNew, yNew);
-      this.outerCircle.position.set(xNew, yNew);
-    } else {
-      this.alpha = FloatingJoystick.NO_TOUCH_ALPHA;
-    }
+    this.resetPos();
+    // If preview, keep the joystick at full visibility
+    this.alpha = opts && opts.preview
+        ? 1
+        : FloatingJoystick.NO_TOUCH_ALPHA;
+  }
+
+  /**
+   * Set the position of the joystick to the bottom-center of the hit area.
+   * And reset the joystick head to be in the middle.
+   */
+  public resetPos() {
+    const hitArea = this.hitArea as Rectangle;
+    const xNew = hitArea.width * 0.5;
+    const yNew = hitArea.height * 0.75;
+    this.innerCircle.position.set(xNew, yNew);
+    this.outerCircle.position.set(xNew, yNew);
   }
 
   /** @return the coordinate from joystick base to joystick top,
