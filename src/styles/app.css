@@ -31,6 +31,10 @@ button {
   color: rgb(23, 24, 28);
 }
 
+section {
+  margin-bottom: 2.5em;
+}
+
 .container {
   max-width: 100vh;
   margin: auto;
@@ -49,7 +53,6 @@ button {
 }
 
 #canvas-div {
-  margin-top: 2em;
   text-align: center;
 }
 
