@@ -100,22 +100,27 @@ export class Carrot extends MovingContainer implements IRespawnable {
     this.picker = null;
   }
 
-  /** Update picked up state
-   * Raise and shrink animation.
+  /**
+   * Update picked up state.
+   *
+   * Raise then shrink animation, with callback called at the end.
+   * If the pickup is cancelled, the animation will play in reverse.
    */
   private updatePicked(delta: number) {
     if (this.visible === false) {
       return;
     }
+    // Extra z value to add in case the picker moves up (e.g. by jumping)
     let extraZ = 0;
     if (this.picker) {
+      extraZ = this.picker.getZ();
       this.stateTime += delta;
+      // The carrot follows the picker while being picked up
       const newPos = this.picker.position;
       this.x = newPos.x;
       this.y = newPos.y + 5;
-      extraZ = this.picker.getZ();
     } else {
-      // undo the pickup (faster rate than picking up)
+      // Nothing picking up. Undo. (animate at a faster rate than picking up)
       this.stateTime -= delta * 2;
       if (this.stateTime < 0) {
         this.state = ActiveState.Idle;
@@ -132,6 +137,7 @@ export class Carrot extends MovingContainer implements IRespawnable {
         // Finished shrinking. The callback is the last chance to deactivate.
         this.callback(this);
         if (this.picker) {
+          // Pick up complete
           this.deactivate();
         } else {
           // Cancel pick up
@@ -146,11 +152,12 @@ export class Carrot extends MovingContainer implements IRespawnable {
 
       this.setZ(RAISE_DURATION * RAISE_SPEED + extraZ);
     } else {
+      // Continue rising up
       if (this.scale.x !== this.pickUpScale) {
         this.setScale(this.pickUpScale);
       }
       this.setZ(this.stateTime * RAISE_SPEED + extraZ);
     }
-    this.dz = 0;  // Don't want this interfering with the animation
+    this.dz = 0;  // Don't want gravity interfering with the animation
   }
 }
