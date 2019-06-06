@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "author": "ZufengW",
-  "license": "MIT",
+  "license": "CC BY-NC 4.0",
   "scripts": {
     "build": "webpack -p",
     "deploy": "./deploy.sh",
